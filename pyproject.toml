@@ -1,0 +1,51 @@
+[tool.poetry]
+name = "sleepy"
+version = "0.0.1"
+description = "LISP-like Simple Language with VM"
+authors = ["Victor Smirnov <vityaman.dev@yandex.ru>"]
+license = "Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/vityaman-edu/sleepy"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+[tool.poetry.scripts]
+example = "sleepy.example.main:main"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "*"
+coverage = "*"
+mypy = "*"
+ruff = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 80
+indent-width = 4
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = ["D104", "D100", "D103", "D211", "D212"]
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.ruff.mccabe]
+max-complexity = 6
+
+[tool.ruff.extend-per-file-ignores]
+"test/**/*.py" = ["S101"]
+
+[tool.pytest.ini_options]
+testpaths = ["test"]
+
+[tool.coverage.report]
+fail_under = 90
