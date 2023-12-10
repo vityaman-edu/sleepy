@@ -9,28 +9,30 @@ repository = "https://github.com/vityaman-edu/sleepy"
 
 [tool.poetry.dependencies]
 python = "^3.12"
+lark = "*"
 
 [tool.poetry.scripts]
-example = "sleepy.example.main:main"
+example = "sleepy.main:main"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "*"
+hypothesis = "*"
 coverage = "*"
 mypy = "*"
 ruff = "*"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["poetry"]
+build-backend = "poetry.masonry.api"
 
 [tool.ruff]
-line-length = 80
+line-length = 70
 indent-width = 4
 target-version = "py312"
 
 [tool.ruff.lint]
 select = ["ALL"]
-ignore = ["D104", "D100", "D103", "D211", "D212"]
+ignore = ["D104", "D100", "D101", "D102", "D103", "D211", "D212", "ANN101"]
 fixable = ["ALL"]
 unfixable = []
 
@@ -43,6 +45,7 @@ max-complexity = 6
 
 [tool.ruff.extend-per-file-ignores]
 "test/**/*.py" = ["S101"]
+"sleepy/**/__init__.py" = ["F401"]
 
 [tool.pytest.ini_options]
 testpaths = ["test"]

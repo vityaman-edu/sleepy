@@ -1,0 +1,40 @@
+start: program
+
+program: expression+
+
+expression: atomic
+          | lambda
+          | if_expression
+          | variable_definition
+          | application
+
+atomic: symbol
+      | integer
+      | string
+
+application: "(" invokable args ")"
+invokable: expression
+args: expression*
+
+if_expression: "(" "if" condition then_branch else_branch ")"
+condition: expression
+then_branch: expression
+else_branch: expression
+
+variable_definition: "(" "def" symbol expression ")"
+
+lambda: "(" "lambda" "(" parameters ")" body ")"
+parameters: parameter*
+parameter: symbol kind
+kind: symbol
+body: expression+
+
+symbol: NAME
+integer: SIGN? DEC_NUMBER
+string: STRING
+
+SIGN: "-" | "+"
+
+%import python (NAME, STRING, DEC_NUMBER)
+%import common (WS)
+%ignore WS
