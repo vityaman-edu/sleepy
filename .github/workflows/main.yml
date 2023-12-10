@@ -1,0 +1,16 @@
+name: Ensuring Quality
+
+on: [push, pull_request]
+
+jobs:
+  quality:
+    name: Ensuring Quality
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+    
+    - name: Lint Markdown files
+      uses: docker://avtodev/markdown-lint:v1
+      with:
+        args: './README.md doc'
