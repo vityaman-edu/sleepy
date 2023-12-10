@@ -7,3 +7,4 @@ Arhitecture course.
 ## Documentation
 
 - [Developement Guide](./doc/dev.md)
+
