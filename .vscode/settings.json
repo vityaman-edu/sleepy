@@ -7,4 +7,13 @@
         "editor.insertSpaces": true,
         "editor.tabSize": 4,
     },
+    "antlr4.format": {
+        "columnLimit": 80,
+        "tabWidth": 4,
+        "useTab": false,
+        "alignColons": "hanging",
+        "alignSemicolons": "hanging",
+        "breakBeforeParens": false,
+        "breakBeforeBraces": false,
+    },
 }
