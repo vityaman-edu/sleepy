@@ -7,10 +7,30 @@ jobs:
     name: Ensuring Quality
     runs-on: ubuntu-latest
     steps:
-    - name: Check out code
-      uses: actions/checkout@v2
-    
+    - name: Check out the code
+      uses: actions/checkout@v3
+
     - name: Lint Markdown files
       uses: docker://avtodev/markdown-lint:v1
       with:
         args: './README.md doc'
+
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.12"
+
+    - name: Install poetry
+      run: python -m pip install poetry
+
+    - name: Install dependencies
+      run: poetry install
+
+    - name: Lint with ruff
+      run: poetry run ruff .
+
+    - name: Lint with mypy
+      run: poetry run mypy . 
+
+    - name: Run tests
+      run: poetry run pytest
