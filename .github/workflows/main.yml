@@ -33,4 +33,7 @@ jobs:
       run: poetry run mypy . 
 
     - name: Run tests
-      run: poetry run pytest
+      run: poetry run coverage run -m pytest
+
+    - name: Check coverage
+      run: poetry run coverage report

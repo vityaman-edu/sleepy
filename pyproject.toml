@@ -46,3 +46,6 @@ max-complexity = 6
 
 [tool.pytest.ini_options]
 testpaths = ["test"]
+
+[tool.coverage.report]
+fail_under = 90
