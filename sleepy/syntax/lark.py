@@ -1,6 +1,6 @@
 import sys
 from abc import ABC
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from lark import Lark, Token, Transformer, v_args
 from lark.ast_utils import AsList, Ast, WithMeta, create_transformer
@@ -27,7 +27,7 @@ class _Atomic(_Expression):
 
 @dataclass
 class Program(_SyntaxTree, AsList, WithMeta):
-    meta: Meta
+    meta: Meta = field(repr=False)
     expressions: list[_Expression]
 
     def pythonic(self) -> PythonRepr:
@@ -36,7 +36,7 @@ class Program(_SyntaxTree, AsList, WithMeta):
 
 @dataclass
 class Symbol(_Atomic, WithMeta):
-    meta: Meta
+    meta: Meta = field(repr=False)
     name: str
 
     def pythonic(self) -> PythonRepr:
@@ -45,7 +45,7 @@ class Symbol(_Atomic, WithMeta):
 
 @dataclass
 class _Integer(_Atomic, WithMeta):
-    meta: Meta
+    meta: Meta = field(repr=False)
     value: int
 
     def pythonic(self) -> PythonRepr:
@@ -54,7 +54,7 @@ class _Integer(_Atomic, WithMeta):
 
 @dataclass
 class String(_Atomic, WithMeta):
-    meta: Meta
+    meta: Meta = field(repr=False)
     value: str
 
     def pythonic(self) -> PythonRepr:
@@ -63,7 +63,7 @@ class String(_Atomic, WithMeta):
 
 @dataclass
 class Kind(_SyntaxTree, WithMeta):
-    meta: Meta
+    meta: Meta = field(repr=False)
     name: Symbol
 
     def pythonic(self) -> PythonRepr:
@@ -72,7 +72,7 @@ class Kind(_SyntaxTree, WithMeta):
 
 @dataclass
 class Parameter(_SyntaxTree, WithMeta):
-    meta: Meta
+    meta: Meta = field(repr=False)
     symbol: Symbol
     kind: Kind
 
@@ -82,7 +82,7 @@ class Parameter(_SyntaxTree, WithMeta):
 
 @dataclass
 class Parameters(_SyntaxTree, AsList, WithMeta):
-    meta: Meta
+    meta: Meta = field(repr=False)
     parameters: list[Parameter]
 
     def pythonic(self) -> tuple:
@@ -91,7 +91,7 @@ class Parameters(_SyntaxTree, AsList, WithMeta):
 
 @dataclass
 class Body(_SyntaxTree, AsList, WithMeta):
-    meta: Meta
+    meta: Meta = field(repr=False)
     expressions: list[_Expression]
 
     def pythonic(self) -> tuple:
@@ -100,7 +100,7 @@ class Body(_SyntaxTree, AsList, WithMeta):
 
 @dataclass
 class Lambda(_Expression, WithMeta):
-    meta: Meta
+    meta: Meta = field(repr=False)
     parameters: Parameters
     body: Body
 
@@ -114,7 +114,7 @@ class Lambda(_Expression, WithMeta):
 
 @dataclass
 class Condition(_SyntaxTree, WithMeta):
-    meta: Meta
+    meta: Meta = field(repr=False)
     expression: _Expression
 
     def pythonic(self) -> PythonRepr:
@@ -123,7 +123,7 @@ class Condition(_SyntaxTree, WithMeta):
 
 @dataclass
 class ThenBranch(_SyntaxTree, WithMeta):
-    meta: Meta
+    meta: Meta = field(repr=False)
     expression: _Expression
 
     def pythonic(self) -> PythonRepr:
@@ -132,7 +132,7 @@ class ThenBranch(_SyntaxTree, WithMeta):
 
 @dataclass
 class ElseBranch(_SyntaxTree, WithMeta):
-    meta: Meta
+    meta: Meta = field(repr=False)
     expression: _Expression
 
     def pythonic(self) -> PythonRepr:
@@ -141,7 +141,7 @@ class ElseBranch(_SyntaxTree, WithMeta):
 
 @dataclass
 class IfExpression(_Expression, WithMeta):
-    meta: Meta
+    meta: Meta = field(repr=False)
     condition: Condition
     then_branch: ThenBranch
     else_branch: ElseBranch
@@ -157,7 +157,7 @@ class IfExpression(_Expression, WithMeta):
 
 @dataclass
 class VariableDefinition(_Expression, WithMeta):
-    meta: Meta
+    meta: Meta = field(repr=False)
     symbol: Symbol
     expression: _Expression
 
@@ -171,7 +171,7 @@ class VariableDefinition(_Expression, WithMeta):
 
 @dataclass
 class Invokable(_SyntaxTree, WithMeta):
-    meta: Meta
+    meta: Meta = field(repr=False)
     expression: _Expression
 
     def pythonic(self) -> PythonRepr:
@@ -180,7 +180,7 @@ class Invokable(_SyntaxTree, WithMeta):
 
 @dataclass
 class Args(_SyntaxTree, AsList, WithMeta):
-    meta: Meta
+    meta: Meta = field(repr=False)
     expressions: list[_Expression]
 
     def pythonic(self) -> tuple:
@@ -189,7 +189,7 @@ class Args(_SyntaxTree, AsList, WithMeta):
 
 @dataclass
 class Application(_Expression, WithMeta):
-    meta: Meta
+    meta: Meta = field(repr=False)
     invokable: Invokable
     args: Args
 
