@@ -5,10 +5,6 @@ cd ..
 
 echo "[sleepy] Running local developement pipeline..."
 
-echo "[sleepy] Installing dependencies..."
-poetry update
-poetry lock
-
 echo "[sleepy] Linting using ruff..."
 poetry run ruff .
 
