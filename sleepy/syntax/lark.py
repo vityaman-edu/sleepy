@@ -185,7 +185,8 @@ class Condition(_SyntaxTree, WithMeta):
 
     def is_same_as(self, other: "_SyntaxTree") -> bool:
         return isinstance(
-            other, Condition
+            other,
+            Condition,
         ) and self.expression.is_same_as(other.expression)
 
 

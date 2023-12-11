@@ -8,7 +8,7 @@ from sleepy.syntax import SleepySyntaxError, parse_program
 
 @pytest.mark.parametrize(
     ("source"),
-    ["basic", "_private", "i64", "CamelCase", "snake_case"],
+    ["basic", "_private", "i64", "CamelCase", "snake_case", "lambda"],
 )
 def test_symbol_positive(source: str) -> None:
     assert parse_program(source).pythonic() == (source,)
