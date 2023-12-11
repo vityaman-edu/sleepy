@@ -20,6 +20,7 @@ atomic
     : SYMBOL
     | INTEGER
     | STRING
+    | BOOLEAN
     ;
 
 application
@@ -40,6 +41,11 @@ lambda
 
 lambdaParameter
     : SYMBOL SYMBOL
+    ;
+
+BOOLEAN
+    : TRUE
+    | FALSE
     ;
 
 SYMBOL
@@ -127,4 +133,16 @@ DOT
 
 COMMENT_OUT
     : ';'
+    ;
+
+SELF
+    : 'self'
+    ;
+
+TRUE
+    : 'true'
+    ;
+
+FALSE
+    : 'false'
     ;
