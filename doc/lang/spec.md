@@ -154,28 +154,28 @@ that are implemented via compiler.
 ### Logical operators
 
 ```scheme
-(not false)
-(or true false)
-(and true true)
+(not false)     ; not: (Bool) -> Bool
+(or true false) ; or: (Bool, Bool) -> Bool
+(and true true) ; and: (Bool, Bool) -> Bool
 ```
 
 ### Integer Comparisons
 
 ```scheme
-(eq 4 4)
-(lt 1 2)
+(eq 4 4) ; eq: (T, U) -> Bool
+(lt 1 2) ; lt: (T, U) -> Bool
 ```
 
 ### Input
 
 ```scheme
-(def a (input))
+(def a (input)) ; input: () -> Integer
 ```
 
 ### Output
 
 ```scheme
-(print "Hello, World!")
+(print "Hello, World!") ; print: (String) -> Integer
 ```
 
 ## Examples
