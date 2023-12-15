@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import NamedTuple
 
 
 class ProgramNode:
@@ -31,16 +30,26 @@ class Integer(Atom):
     value: int
 
 
+@dataclass
 class Kind(ProgramNode):
     name: str
 
 
 @dataclass
-class Lambda(Expression):
-    class Parameter(NamedTuple):
-        name: Symbol
-        kind: Kind
+class Parameter(Atom):
+    name: Symbol
+    kind: Kind
 
+
+@dataclass
+class Intrinsic(Atom):
+    name: Symbol
+    parameters: list[Parameter]
+    return_kind: Kind
+
+
+@dataclass
+class Closure(Expression):
     parameters: list[Parameter]
     statements: list[Expression]
 

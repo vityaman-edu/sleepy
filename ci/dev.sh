@@ -1,4 +1,5 @@
 set -o errexit
+set -o xtrace
 
 cd $(dirname -- $0)
 cd ..
@@ -16,5 +17,3 @@ poetry run coverage run -m pytest
 poetry run coverage report
 
 echo "[sleepy] Done!"
-
-clear
