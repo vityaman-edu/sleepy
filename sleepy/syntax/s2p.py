@@ -138,4 +138,8 @@ class Syntax2Program(Visitor[ProgramNode]):
         builtin = BuiltinLayer()
         s2p = Syntax2Program(builtin.namespace, builtin.bindings)
         program = s2p.visit_program(tree)
-        return ProgramUnit(program=program, bindings=s2p.bindings)
+        return ProgramUnit(
+            program=program,
+            bindings=s2p.bindings,
+            root=builtin.namespace,
+        )

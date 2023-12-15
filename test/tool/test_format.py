@@ -1,13 +1,12 @@
+from test.program.parse import parse
+
 import pytest
 
-from sleepy.syntax import Syntax2Program, parse_program
 from sleepy.tool import formatted
 
 
 def roundtrip(source: str) -> str:
-    syntax_tree = parse_program(source)
-    unit = Syntax2Program.converted(syntax_tree)
-    return formatted(unit.program)
+    return formatted(parse(source).program)
 
 
 @pytest.mark.parametrize(

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from .bindings import Bindings
+from .namespace import Namespace
 from .representation import Program
 
 
@@ -8,3 +9,4 @@ from .representation import Program
 class ProgramUnit:
     program: Program
     bindings: Bindings
+    root: Namespace
