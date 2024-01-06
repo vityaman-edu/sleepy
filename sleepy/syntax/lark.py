@@ -354,12 +354,12 @@ transformer = create_transformer(
 )
 
 
-def parse_program(text: str) -> _SyntaxTree:
+def parse_program(text: str) -> Program:
     try:
         tree = parser.parse(text)
     except ParseError as e:
-        raise SleepySyntaxError from e
+        raise SleepySyntaxError(e) from e
     except LexError as e:
-        raise SleepySyntaxError from e
+        raise SleepySyntaxError(e) from e
 
     return transformer.transform(tree)
