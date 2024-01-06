@@ -360,6 +360,6 @@ def parse_program(text: str) -> Program:
     except ParseError as e:
         raise SleepySyntaxError(e) from e
     except LexError as e:
-        raise SleepySyntaxError from e
+        raise SleepySyntaxError(e) from e
 
     return transformer.transform(tree)
