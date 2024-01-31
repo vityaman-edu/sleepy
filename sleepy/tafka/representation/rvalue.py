@@ -23,7 +23,7 @@ class Intrinsic(RValue):
         raise NotImplementedError
 
 
-@dataclass
+@dataclass(repr=False)
 class Load(Intrinsic):
     constant: Const
 
@@ -47,7 +47,7 @@ class Load(Intrinsic):
         return f"{self.name}({self.constant!r}): {self.value}"
 
 
-@dataclass
+@dataclass(repr=False)
 class UnaryOperator(Intrinsic):
     argument: Var
 
@@ -61,7 +61,7 @@ class UnaryOperator(Intrinsic):
         return f"{self.name}({self.argument!r}): {self.value}"
 
 
-@dataclass
+@dataclass(repr=False)
 class BinaryOperator(Intrinsic):
     left: Var
     right: Var
@@ -82,6 +82,7 @@ class BinaryOperator(Intrinsic):
         )
 
 
+@dataclass(repr=False)
 class Copy(UnaryOperator):
     @override
     @property
@@ -94,6 +95,7 @@ class Copy(UnaryOperator):
         return self.argument.kind
 
 
+@dataclass(repr=False)
 class Sum(BinaryOperator):
     @override
     @property
@@ -105,6 +107,8 @@ class Sum(BinaryOperator):
     def value(self) -> Kind:
         return self.left.kind
 
+
+@dataclass(repr=False)
 class Div(BinaryOperator):
     @override
     @property
@@ -116,6 +120,8 @@ class Div(BinaryOperator):
     def value(self) -> Kind:
         return self.left.kind
 
+
+@dataclass(repr=False)
 class Rem(BinaryOperator):
     @override
     @property

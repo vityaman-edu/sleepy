@@ -10,7 +10,7 @@ class Statement(Node):
     pass
 
 
-@dataclass
+@dataclass(repr=False)
 class Set(Statement):
     target: Var
     source: RValue
@@ -20,7 +20,7 @@ class Set(Statement):
         return f"{self.target!r} = {self.source!r}"
 
 
-@dataclass
+@dataclass(repr=False)
 class Block(Node):
     statements: list[Statement]
 
