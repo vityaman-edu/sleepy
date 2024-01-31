@@ -57,26 +57,27 @@ class TafkaEmitVisitor(Visitor[None]):
 
     @override
     def visit_conditional(self, tree: Conditional) -> None:
-        then_block = Block(self.next_lbl(), [])
-        else_block = Block(self.next_lbl(), [])
-        end_block = Block(self.next_lbl(), [])
+        then_blk = Block(self.next_lbl(), [])
+        else_blk = Block(self.next_lbl(), [])
+        next_blk = Block(self.next_lbl(), [])
 
         self.visit_expression(tree.condition)
         condition = self.last_result
 
-        br = TafConditional(condition, then_block, else_block)
+        br = TafConditional(condition, then_blk, else_blk, next_blk)
         self.emit_statement(br)
 
-        self.current_block = then_block
+        self.current_block = then_blk
         self.visit_expression(tree.then_branch)
         then_result = self.last_result
-        self.emit_statement(Goto(end_block))
+        self.emit_statement(Goto(next_blk))
 
-        self.current_block = else_block
+        self.current_block = else_blk
         self.visit_expression(tree.else_branch)
         self.emit_statement(Set(then_result, Copy(self.last_result)))
+        self.emit_statement(Goto(next_blk))
 
-        self.current_block = end_block
+        self.current_block = next_blk
 
     @override
     def visit_application(self, tree: Application) -> None:

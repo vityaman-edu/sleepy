@@ -69,10 +69,7 @@ class Conditional(Jump):
     condition: Var
     then_branch: Block
     else_branch: Block
-
-    @property
-    def end(self) -> Block:
-        return cast(Goto, self.then_branch.last).block
+    next_block: Block
 
     @override
     def __repr__(self) -> str:
@@ -80,5 +77,5 @@ class Conditional(Jump):
             f"if {self.condition!r} "
             f"then {self.then_branch.label!r} "
             f"else {self.else_branch.label!r} "
-            f"end {self.end.label!r}"
+            f"end {self.next_block.label!r}"
         )
