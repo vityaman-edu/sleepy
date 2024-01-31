@@ -19,7 +19,7 @@ def test_simple() -> None:
     source = "(sum (div 5 2) (rem (sum 2 2) 2))"
     unit = parse(source)
 
-    tafka = TafkaEmitVisitor()
+    tafka = TafkaEmitVisitor(unit)
     tafka.visit_program(unit.program)
 
     actual = tafka.top_level.statements

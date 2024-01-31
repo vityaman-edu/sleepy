@@ -7,11 +7,13 @@ from sleepy.program import (
     Conditional,
     Definition,
     Integer,
+    Intrinsic,
     Kind,
     Program,
     Symbol,
     Visitor,
 )
+from sleepy.program.unit import ProgramUnit
 from sleepy.tafka.representation import (
     Block,
     Const,
@@ -33,9 +35,10 @@ UniqueNameSequence = Generator[str, None, None]
 
 
 class TafkaEmitVisitor(Visitor[None]):
-    def __init__(self) -> None:
+    def __init__(self, unit: ProgramUnit) -> None:
         self.var_names = map(str, range(10000000))
         self.top_level = Block([])
+        self.unit = unit
 
     @override
     def visit_program(self, tree: Program) -> None:
@@ -54,13 +57,32 @@ class TafkaEmitVisitor(Visitor[None]):
             args.append(self.last_result)
 
         rvalue: RValue
-        match cast(Symbol, tree.invokable).name:
-            case "sum":
-                rvalue = Sum(args[0], args[1])
-            case "div":
-                rvalue = Div(args[0], args[1])
-            case "rem":
-                rvalue = Rem(args[0], args[1])
+        match tree.invokable:
+            case Symbol() as symbol:
+                invokable = self.unit.bindings.resolve(symbol)
+                match invokable:
+                    case Intrinsic(
+                        name=Symbol("sum"),
+                        parameters=_,
+                        return_kind=_,
+                    ):
+                        rvalue = Sum(args[0], args[1])
+                    case Intrinsic(
+                        name=Symbol("div"),
+                        parameters=_,
+                        return_kind=_,
+                    ):
+                        rvalue = Div(args[0], args[1])
+                    case Intrinsic(
+                        name=Symbol("rem"),
+                        parameters=_,
+                        return_kind=_,
+                    ):
+                        rvalue = Rem(args[0], args[1])
+                    case _:
+                        raise RuntimeError(str(invokable))
+            case _:
+                raise RuntimeError(str(tree.invokable))
 
         result = self.next_var(Int())
         self.emit_statement(Set(result, rvalue))
