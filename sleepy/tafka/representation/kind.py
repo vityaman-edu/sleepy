@@ -16,6 +16,13 @@ class Int(Kind):
 
 
 @dataclass(repr=False)
+class Bool(Kind):
+    @override
+    def __repr__(self) -> str:
+        return "bool"
+
+
+@dataclass(repr=False)
 class Signature(Kind):
     params: list[Kind]
     value: Kind

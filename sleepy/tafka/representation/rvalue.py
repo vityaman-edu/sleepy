@@ -2,7 +2,7 @@ from abc import abstractproperty
 from dataclasses import dataclass
 from typing import override
 
-from .kind import Kind, Signature
+from .kind import Bool, Kind, Signature
 from .node import Node
 from .symbol import Const, Var
 
@@ -109,6 +109,19 @@ class Sum(BinaryOperator):
 
 
 @dataclass(repr=False)
+class Mul(BinaryOperator):
+    @override
+    @property
+    def name(self) -> str:
+        return "mul"
+
+    @override
+    @property
+    def value(self) -> Kind:
+        return self.left.kind
+
+
+@dataclass(repr=False)
 class Div(BinaryOperator):
     @override
     @property
@@ -132,3 +145,29 @@ class Rem(BinaryOperator):
     @property
     def value(self) -> Kind:
         return self.left.kind
+
+
+@dataclass(repr=False)
+class Eq(BinaryOperator):
+    @override
+    @property
+    def name(self) -> str:
+        return "eq"
+
+    @override
+    @property
+    def value(self) -> Kind:
+        return Bool()
+
+
+@dataclass(repr=False)
+class Lt(BinaryOperator):
+    @override
+    @property
+    def name(self) -> str:
+        return "lt"
+
+    @override
+    @property
+    def value(self) -> Kind:
+        return Bool()

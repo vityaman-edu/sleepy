@@ -1,12 +1,23 @@
-from .block import Block, Set, Statement
+from .block import (
+    Block,
+    Conditional,
+    Goto,
+    Label,
+    Return,
+    Set,
+    Statement,
+)
 from .kind import Int, Kind, Signature
 from .node import Node
 from .rvalue import (
     BinaryOperator,
     Copy,
     Div,
+    Eq,
     Intrinsic,
     Load,
+    Lt,
+    Mul,
     Rem,
     RValue,
     Sum,

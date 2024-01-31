@@ -17,19 +17,25 @@ from sleepy.program.unit import ProgramUnit
 from sleepy.tafka.representation import (
     Block,
     Const,
+    Copy,
     Div,
+    Eq,
+    Goto,
     Int,
+    Label,
     Load,
+    Lt,
+    Mul,
     Rem,
+    Return,
     RValue,
     Set,
     Statement,
     Sum,
     Var,
 )
-from sleepy.tafka.representation import (
-    Kind as TafKind,
-)
+from sleepy.tafka.representation import Conditional as TafConditional
+from sleepy.tafka.representation import Kind as TafKind
 
 UniqueNameSequence = Generator[str, None, None]
 
@@ -37,17 +43,40 @@ UniqueNameSequence = Generator[str, None, None]
 class TafkaEmitVisitor(Visitor[None]):
     def __init__(self, unit: ProgramUnit) -> None:
         self.var_names = map(str, range(10000000))
-        self.top_level = Block([])
+        self.lbl_names = map(str, range(10000000))
+        self.main = Block(Label("main"), [])
+        self.current_block = self.main
         self.unit = unit
+        self.last_result = Var("0", Int())
 
     @override
     def visit_program(self, tree: Program) -> None:
         for statement in tree.statements:
             self.visit_expression(statement)
+        self.emit_statement(Return())
 
     @override
     def visit_conditional(self, tree: Conditional) -> None:
-        raise NotImplementedError
+        then_block = Block(self.next_lbl(), [])
+        else_block = Block(self.next_lbl(), [])
+        end_block = Block(self.next_lbl(), [])
+
+        self.visit_expression(tree.condition)
+        condition = self.last_result
+
+        br = TafConditional(condition, then_block, else_block)
+        self.emit_statement(br)
+
+        self.current_block = then_block
+        self.visit_expression(tree.then_branch)
+        then_result = self.last_result
+        self.emit_statement(Goto(end_block))
+
+        self.current_block = else_block
+        self.visit_expression(tree.else_branch)
+        self.emit_statement(Set(then_result, Copy(self.last_result)))
+
+        self.current_block = end_block
 
     @override
     def visit_application(self, tree: Application) -> None:
@@ -56,36 +85,27 @@ class TafkaEmitVisitor(Visitor[None]):
             self.visit_expression(arg)
             args.append(self.last_result)
 
-        rvalue: RValue
-        match tree.invokable:
-            case Symbol() as symbol:
-                invokable = self.unit.bindings.resolve(symbol)
-                match invokable:
-                    case Intrinsic(
-                        name=Symbol("sum"),
-                        parameters=_,
-                        return_kind=_,
-                    ):
-                        rvalue = Sum(args[0], args[1])
-                    case Intrinsic(
-                        name=Symbol("div"),
-                        parameters=_,
-                        return_kind=_,
-                    ):
-                        rvalue = Div(args[0], args[1])
-                    case Intrinsic(
-                        name=Symbol("rem"),
-                        parameters=_,
-                        return_kind=_,
-                    ):
-                        rvalue = Rem(args[0], args[1])
+        symbol = cast(Symbol, tree.invokable)
+        invokable = self.unit.bindings.resolve(symbol)
+        match invokable:
+            case Intrinsic(symbol, _, _) as intrinsic:
+                match symbol.name:
+                    case "sum":
+                        self.emit_intermidiate(Sum(args[0], args[1]))
+                    case "div":
+                        self.emit_intermidiate(Div(args[0], args[1]))
+                    case "rem":
+                        self.emit_intermidiate(Rem(args[0], args[1]))
+                    case "mul":
+                        self.emit_intermidiate(Mul(args[0], args[1]))
+                    case "eq":
+                        self.emit_intermidiate(Eq(args[0], args[1]))
+                    case "lt":
+                        self.emit_intermidiate(Lt(args[0], args[1]))
                     case _:
-                        raise RuntimeError(str(invokable))
+                        raise RuntimeError(str(intrinsic))
             case _:
-                raise RuntimeError(str(tree.invokable))
-
-        result = self.next_var(Int())
-        self.emit_statement(Set(result, rvalue))
+                raise RuntimeError(str(invokable))
 
     @override
     def visit_lambda(self, tree: Closure) -> None:
@@ -101,20 +121,22 @@ class TafkaEmitVisitor(Visitor[None]):
 
     @override
     def visit_integer(self, tree: Integer) -> None:
-        result = self.next_var(Int())
-        rvalue = Load(Const(str(tree.value), Int()))
-        self.emit_statement(Set(result, rvalue))
+        self.emit_intermidiate(Load(Const(str(tree.value), Int())))
 
     @override
     def visit_definition(self, tree: Definition) -> None:
         raise NotImplementedError
 
     def emit_statement(self, statement: Statement) -> None:
-        self.top_level.statements.append(statement)
+        if isinstance(statement, Set):
+            self.last_result = statement.target
+        self.current_block.statements.append(statement)
 
-    @property
-    def last_result(self) -> Var:
-        return cast(Set, self.top_level.statements[-1]).target
+    def emit_intermidiate(self, rvalue: RValue) -> None:
+        self.emit_statement(Set(self.next_var(rvalue.value), rvalue))
 
     def next_var(self, kind: TafKind) -> Var:
         return Var(next(self.var_names), kind)
+
+    def next_lbl(self) -> Label:
+        return Label(next(self.lbl_names))

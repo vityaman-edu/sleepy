@@ -11,6 +11,15 @@ intrinsic_sum = Intrinsic(
     Kind("int"),
 )
 
+intrinsic_mul = Intrinsic(
+    Symbol("mul"),
+    [
+        Parameter(Symbol("a"), Kind("int")),
+        Parameter(Symbol("b"), Kind("int")),
+    ],
+    Kind("int"),
+)
+
 intrinsic_div = Intrinsic(
     Symbol("div"),
     [
@@ -73,6 +82,7 @@ intrinsic_and = Intrinsic(
 
 intrinsics = [
     intrinsic_sum,
+    intrinsic_mul,
     intrinsic_div,
     intrinsic_rem,
     intrinsic_eq,
