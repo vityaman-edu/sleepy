@@ -39,4 +39,5 @@ tafka: |-
     var(6): int = copy(var(11): int): int
     goto label(2)
   label(2):
-  return
+  var(13): int = load(const(0): int): int
+  return var(13): int

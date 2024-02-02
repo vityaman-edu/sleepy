@@ -16,9 +16,11 @@ class Jump(Statement):
 
 @dataclass(repr=False)
 class Return(Statement):
+    value: Var
+
     @override
     def __repr__(self) -> str:
-        return "return"
+        return f"return {self.value}"
 
 
 @dataclass(repr=False)

@@ -59,7 +59,8 @@ class TafkaEmitVisitor(Visitor[None]):
     def visit_program(self, tree: Program) -> None:
         for statement in tree.statements:
             self.visit_expression(statement)
-        self.emit_statement(Return())
+        self.emit_intermidiate(Load(Const("0", Int())))
+        self.emit_statement(Return(self.last_result))
 
     @override
     def visit_conditional(self, tree: Conditional) -> None:
