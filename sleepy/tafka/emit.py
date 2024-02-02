@@ -11,6 +11,7 @@ from sleepy.program import (
     Kind,
     Program,
     Symbol,
+    SymbolId,
     Visitor,
 )
 from sleepy.program.unit import ProgramUnit
@@ -42,11 +43,16 @@ UniqueNameSequence = Generator[str, None, None]
 
 class TafkaEmitVisitor(Visitor[None]):
     def __init__(self, unit: ProgramUnit) -> None:
+        self.unit = unit
+
+        self.main = Block(Label("main"), [])
+
         self.var_names = map(str, range(10000000))
         self.lbl_names = map(str, range(10000000))
-        self.main = Block(Label("main"), [])
+
+        self.vars: dict[SymbolId, Var] = {}
+
         self.current_block = self.main
-        self.unit = unit
         self.last_result = Var("0", Int())
 
     @override
@@ -114,7 +120,7 @@ class TafkaEmitVisitor(Visitor[None]):
 
     @override
     def visit_symbol(self, tree: Symbol) -> None:
-        raise NotImplementedError
+        self.last_result = self.vars[tree.uid]
 
     @override
     def visit_kind(self, tree: Kind) -> None:
@@ -126,7 +132,8 @@ class TafkaEmitVisitor(Visitor[None]):
 
     @override
     def visit_definition(self, tree: Definition) -> None:
-        raise NotImplementedError
+        self.visit_expression(tree.expression)
+        self.vars[tree.symbol.uid] = self.last_result
 
     def emit_statement(self, statement: Statement) -> None:
         if isinstance(statement, Set):
