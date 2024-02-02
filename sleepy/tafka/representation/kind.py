@@ -1,11 +1,21 @@
 from dataclasses import dataclass
 from typing import override
 
+from sleepy.program.representation import Kind as SleepyKind
+
 from .node import Node
 
 
 class Kind(Node):
-    pass
+    @classmethod
+    def from_sleepy(cls, kind: SleepyKind) -> "Kind":
+        match kind.name:
+            case "int":
+                return Int()
+            case "bool":
+                return Bool()
+            case _:
+                raise NotImplementedError
 
 
 @dataclass(repr=False)

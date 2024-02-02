@@ -3,6 +3,7 @@ from .block import (
     Conditional,
     Goto,
     Label,
+    Procedure,
     Return,
     Set,
     Statement,

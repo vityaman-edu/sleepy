@@ -27,6 +27,7 @@ from sleepy.tafka.representation import (
     Load,
     Lt,
     Mul,
+    Procedure,
     Rem,
     Return,
     RValue,
@@ -51,6 +52,7 @@ class TafkaEmitVisitor(Visitor[None]):
         self.lbl_names = map(str, range(10000000))
 
         self.vars: dict[SymbolId, Var] = {}
+        self.procedures: list[Procedure] = []
 
         self.current_block = self.main
         self.last_result = Var("0", Int())
@@ -117,7 +119,36 @@ class TafkaEmitVisitor(Visitor[None]):
 
     @override
     def visit_lambda(self, tree: Closure) -> None:
-        raise NotImplementedError
+        current_block = self.current_block
+
+        label = self.next_lbl()
+
+        params = [
+            self.next_var(TafKind.from_sleepy(param.kind))
+            for param in tree.parameters
+        ]
+
+        for param, var in zip(tree.parameters, params, strict=True):
+            self.vars[param.name.uid] = var
+
+        body = Block(label, statements=[])
+
+        self.current_block = body
+        for statement in tree.statements:
+            self.visit_expression(statement)
+
+        self.emit_statement(Return(self.last_result))
+
+        value = self.last_result.kind
+
+        self.current_block = current_block
+
+        procedure = Procedure(label.name, body, params, value)
+        self.procedures.append(procedure)
+
+        self.emit_intermidiate(
+            Load(Const(label.name, procedure.signature)),
+        )
 
     @override
     def visit_symbol(self, tree: Symbol) -> None:

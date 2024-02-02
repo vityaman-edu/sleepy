@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import cast, override
 
+from .kind import Kind, Signature
 from .node import Node
 from .rvalue import RValue
 from .symbol import Var
@@ -80,4 +81,27 @@ class Conditional(Jump):
             f"then {self.then_branch.label!r} "
             f"else {self.else_branch.label!r} "
             f"end {self.next_block.label!r}"
+        )
+
+
+@dataclass(repr=False)
+class Procedure(Node):
+    name: str
+    entry: Block
+    parameters: list[Var]
+    value: Kind
+
+    @property
+    def signature(self) -> Signature:
+        return Signature(
+            [_.kind for _ in self.parameters],
+            self.value,
+        )
+
+    @override
+    def __repr__(self) -> str:
+        return (
+            f"procedure {self.name}("
+            f"{', '.join(map(repr, self.parameters))}) "
+            f"-> {self.value!r}"
         )
