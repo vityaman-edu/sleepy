@@ -16,6 +16,7 @@ example = "sleepy.main:main"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "*"
+pytest-golden = "*"
 hypothesis = "*"
 coverage = "*"
 mypy = "*"
