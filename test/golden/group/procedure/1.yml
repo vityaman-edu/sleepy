@@ -5,12 +5,12 @@ sleepy: |-
 tafka: |-
   procedure 0(var(0): int, var(1): int) -> int
   label(0):
-  var(2): int = mul(var(0): int, var(0): int): int
-  var(3): int = mul(var(1): int, var(1): int): int
-  var(4): int = sum(var(2): int, var(3): int): int
-  return var(4): int
+    var(2): int = mul(var(0): int, var(0): int): int
+    var(3): int = mul(var(1): int, var(1): int): int
+    var(4): int = sum(var(2): int, var(3): int): int
+    return var(4): int
 
   label(main):
-  var(5): (int, int) -> int = load(const(0): (int, int) -> int): (int, int) -> int
-  var(6): int = load(const(0): int): int
-  return var(6): int
+    var(5): (int, int) -> int = load(const(0): (int, int) -> int): (int, int) -> int
+    var(6): int = load(const(0): int): int
+    return var(6): int

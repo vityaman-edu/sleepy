@@ -1,0 +1,12 @@
+sleepy: |-
+  (def id (lambda (n int) n))
+
+tafka: |-
+  procedure 0(var(0): int) -> int
+  label(0):
+    return var(0): int
+
+  label(main):
+    var(1): (int) -> int = load(const(0): (int) -> int): (int) -> int
+    var(2): int = load(const(0): int): int
+    return var(2): int
