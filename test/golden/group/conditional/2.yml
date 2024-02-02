@@ -1,0 +1,42 @@
+sleepy: |-
+  (if (eq 1 1) 
+    (if (eq 1 1) 1 1) 
+    (if (eq 1 1) 1 1))
+
+tafka: |-
+  label(main):
+  var(0): int = load(const(1): int): int
+  var(1): int = load(const(1): int): int
+  var(2): bool = eq(var(0): int, var(1): int): bool
+  if var(2): bool then label(0) else label(1) end label(2)
+  label(0):
+    var(3): int = load(const(1): int): int
+    var(4): int = load(const(1): int): int
+    var(5): bool = eq(var(3): int, var(4): int): bool
+    if var(5): bool then label(3) else label(4) end label(5)
+    label(3):
+      var(6): int = load(const(1): int): int
+      goto label(5)
+    label(4):
+      var(7): int = load(const(1): int): int
+      var(6): int = copy(var(7): int): int
+      goto label(5)
+    label(5):
+    goto label(2)
+  label(1):
+    var(8): int = load(const(1): int): int
+    var(9): int = load(const(1): int): int
+    var(10): bool = eq(var(8): int, var(9): int): bool
+    if var(10): bool then label(6) else label(7) end label(8)
+    label(6):
+      var(11): int = load(const(1): int): int
+      goto label(8)
+    label(7):
+      var(12): int = load(const(1): int): int
+      var(11): int = copy(var(12): int): int
+      goto label(8)
+    label(8):
+    var(6): int = copy(var(11): int): int
+    goto label(2)
+  label(2):
+  return

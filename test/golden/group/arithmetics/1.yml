@@ -1,0 +1,15 @@
+sleepy: |-
+  (sum (div 5 2) (rem (sum 2 2) 2))
+
+tafka: |-
+  label(main):
+  var(0): int = load(const(5): int): int
+  var(1): int = load(const(2): int): int
+  var(2): int = div(var(0): int, var(1): int): int
+  var(3): int = load(const(2): int): int
+  var(4): int = load(const(2): int): int
+  var(5): int = sum(var(3): int, var(4): int): int
+  var(6): int = load(const(2): int): int
+  var(7): int = rem(var(5): int, var(6): int): int
+  var(8): int = sum(var(2): int, var(7): int): int
+  return
