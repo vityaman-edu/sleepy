@@ -1,0 +1,25 @@
+sleepy: |-
+  (def a 1)
+  (eq a 1)
+  (def a 2)
+  (eq a 2)
+  (def a a)
+  (eq a 3)
+
+tafka: |-
+  label(main):
+
+  var(0): int = load(const(1): int): int
+
+  var(1): int = load(const(1): int): int
+  var(2): bool = eq(var(0): int, var(1): int): bool
+
+  var(3): int = load(const(2): int): int
+
+  var(4): int = load(const(2): int): int
+  var(5): bool = eq(var(3): int, var(4): int): bool
+
+  var(6): int = load(const(3): int): int
+  var(7): bool = eq(var(3): int, var(6): int): bool
+
+  return

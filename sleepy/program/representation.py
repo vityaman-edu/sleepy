@@ -1,9 +1,11 @@
 from dataclasses import dataclass
 
+SymbolId = int
+
 
 class ProgramNode:
     @property
-    def uid(self) -> int:
+    def uid(self) -> SymbolId:
         return id(self)
 
 

@@ -9,7 +9,9 @@ def test_all(golden: dict[str, str]) -> None:
     expected_tafka_text: str = golden["tafka"]
 
     expected_tafka_text = "\n".join(
-        line.lstrip() for line in expected_tafka_text.split("\n")
+        line.lstrip()
+        for line in expected_tafka_text.split("\n")
+        if len(line) != 0
     )
 
     actual_tafka = tafka_emit(given_sleepy_text)

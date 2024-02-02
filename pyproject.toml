@@ -54,10 +54,10 @@ unfixable = []
 quote-style = "double"
 indent-style = "space"
 
-[tool.ruff.mccabe]
+[tool.ruff.lint.mccabe]
 max-complexity = 6
 
-[tool.ruff.extend-per-file-ignores]
+[tool.ruff.lint.extend-per-file-ignores]
 "test/**/*.py" = ["S101"]
 "sleepy/**/__init__.py" = ["F401"]
 
