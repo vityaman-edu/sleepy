@@ -1,5 +1,5 @@
 from collections.abc import Generator
-from typing import cast, override
+from typing import override
 
 from sleepy.program import (
     Application,
@@ -27,6 +27,7 @@ from sleepy.tafka.representation import (
     Load,
     Lt,
     Mul,
+    Procedure,
     Rem,
     Return,
     RValue,
@@ -37,6 +38,7 @@ from sleepy.tafka.representation import (
 )
 from sleepy.tafka.representation import Conditional as TafConditional
 from sleepy.tafka.representation import Kind as TafKind
+from sleepy.tafka.representation.rvalue import Invokation
 
 UniqueNameSequence = Generator[str, None, None]
 
@@ -51,6 +53,7 @@ class TafkaEmitVisitor(Visitor[None]):
         self.lbl_names = map(str, range(10000000))
 
         self.vars: dict[SymbolId, Var] = {}
+        self.procedures: list[Procedure] = []
 
         self.current_block = self.main
         self.last_result = Var("0", Int())
@@ -59,7 +62,8 @@ class TafkaEmitVisitor(Visitor[None]):
     def visit_program(self, tree: Program) -> None:
         for statement in tree.statements:
             self.visit_expression(statement)
-        self.emit_statement(Return())
+        self.emit_intermidiate(Load(Const("0", Int())))
+        self.emit_statement(Return(self.last_result))
 
     @override
     def visit_conditional(self, tree: Conditional) -> None:
@@ -92,31 +96,88 @@ class TafkaEmitVisitor(Visitor[None]):
             self.visit_expression(arg)
             args.append(self.last_result)
 
-        symbol = cast(Symbol, tree.invokable)
-        invokable = self.unit.bindings.resolve(symbol)
-        match invokable:
-            case Intrinsic(symbol, _, _) as intrinsic:
-                match symbol.name:
-                    case "sum":
-                        self.emit_intermidiate(Sum(args[0], args[1]))
-                    case "div":
-                        self.emit_intermidiate(Div(args[0], args[1]))
-                    case "rem":
-                        self.emit_intermidiate(Rem(args[0], args[1]))
-                    case "mul":
-                        self.emit_intermidiate(Mul(args[0], args[1]))
-                    case "eq":
-                        self.emit_intermidiate(Eq(args[0], args[1]))
-                    case "lt":
-                        self.emit_intermidiate(Lt(args[0], args[1]))
-                    case _:
-                        raise RuntimeError(str(intrinsic))
+        match tree.invokable:
+            case Symbol() as symbol:
+                invokable = self.unit.bindings.resolve(symbol)
+                match invokable:
+                    case Intrinsic() as intrinsic:
+                        self.visit_application_intrinsic(
+                            intrinsic,
+                            args,
+                        )
+                    case Closure() as closure:
+                        self.visit_symbol(symbol)
+                        self.visit_application_variable(
+                            self.last_result,
+                            args,
+                        )
+            case Closure() as closure:
+                self.visit_lambda(closure)
+                self.visit_application_variable(
+                    self.last_result,
+                    args,
+                )
+
+    def visit_application_intrinsic(
+        self,
+        intrinsic: Intrinsic,
+        args: list[Var],
+    ) -> None:
+        match intrinsic.name.name:
+            case "sum":
+                self.emit_intermidiate(Sum(args[0], args[1]))
+            case "div":
+                self.emit_intermidiate(Div(args[0], args[1]))
+            case "rem":
+                self.emit_intermidiate(Rem(args[0], args[1]))
+            case "mul":
+                self.emit_intermidiate(Mul(args[0], args[1]))
+            case "eq":
+                self.emit_intermidiate(Eq(args[0], args[1]))
+            case "lt":
+                self.emit_intermidiate(Lt(args[0], args[1]))
             case _:
-                raise RuntimeError(str(invokable))
+                raise RuntimeError(str(intrinsic))
+
+    def visit_application_variable(
+        self,
+        invokable: Var,
+        args: list[Var],
+    ) -> None:
+        self.emit_intermidiate(Invokation(invokable, args))
 
     @override
     def visit_lambda(self, tree: Closure) -> None:
-        raise NotImplementedError
+        current_block = self.current_block
+
+        label = self.next_lbl()
+
+        params = [
+            self.next_var(TafKind.from_sleepy(param.kind))
+            for param in tree.parameters
+        ]
+
+        for param, var in zip(tree.parameters, params, strict=True):
+            self.vars[param.name.uid] = var
+
+        body = Block(label, statements=[])
+
+        self.current_block = body
+        for statement in tree.statements:
+            self.visit_expression(statement)
+
+        self.emit_statement(Return(self.last_result))
+
+        value = self.last_result.kind
+
+        self.current_block = current_block
+
+        procedure = Procedure(label.name, body, params, value)
+        self.procedures.append(procedure)
+
+        self.emit_intermidiate(
+            Load(Const(label.name, procedure.signature)),
+        )
 
     @override
     def visit_symbol(self, tree: Symbol) -> None:

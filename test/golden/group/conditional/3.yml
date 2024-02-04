@@ -40,4 +40,6 @@ tafka: |-
     goto label(5)
   label(5):
   var(16): int = sum(var(5): int, var(14): int): int
-  return
+  
+  var(17): int = load(const(0): int): int
+  return var(17): int
