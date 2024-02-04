@@ -1,5 +1,5 @@
 from collections.abc import Generator
-from typing import cast, override
+from typing import override
 
 from sleepy.program import (
     Application,
@@ -38,6 +38,7 @@ from sleepy.tafka.representation import (
 )
 from sleepy.tafka.representation import Conditional as TafConditional
 from sleepy.tafka.representation import Kind as TafKind
+from sleepy.tafka.representation.rvalue import Invokation
 
 UniqueNameSequence = Generator[str, None, None]
 
@@ -95,27 +96,55 @@ class TafkaEmitVisitor(Visitor[None]):
             self.visit_expression(arg)
             args.append(self.last_result)
 
-        symbol = cast(Symbol, tree.invokable)
-        invokable = self.unit.bindings.resolve(symbol)
-        match invokable:
-            case Intrinsic(symbol, _, _) as intrinsic:
-                match symbol.name:
-                    case "sum":
-                        self.emit_intermidiate(Sum(args[0], args[1]))
-                    case "div":
-                        self.emit_intermidiate(Div(args[0], args[1]))
-                    case "rem":
-                        self.emit_intermidiate(Rem(args[0], args[1]))
-                    case "mul":
-                        self.emit_intermidiate(Mul(args[0], args[1]))
-                    case "eq":
-                        self.emit_intermidiate(Eq(args[0], args[1]))
-                    case "lt":
-                        self.emit_intermidiate(Lt(args[0], args[1]))
-                    case _:
-                        raise RuntimeError(str(intrinsic))
+        match tree.invokable:
+            case Symbol() as symbol:
+                invokable = self.unit.bindings.resolve(symbol)
+                match invokable:
+                    case Intrinsic() as intrinsic:
+                        self.visit_application_intrinsic(
+                            intrinsic,
+                            args,
+                        )
+                    case Closure() as closure:
+                        self.visit_symbol(symbol)
+                        self.visit_application_variable(
+                            self.last_result,
+                            args,
+                        )
+            case Closure() as closure:
+                self.visit_lambda(closure)
+                self.visit_application_variable(
+                    self.last_result,
+                    args,
+                )
+
+    def visit_application_intrinsic(
+        self,
+        intrinsic: Intrinsic,
+        args: list[Var],
+    ) -> None:
+        match intrinsic.name.name:
+            case "sum":
+                self.emit_intermidiate(Sum(args[0], args[1]))
+            case "div":
+                self.emit_intermidiate(Div(args[0], args[1]))
+            case "rem":
+                self.emit_intermidiate(Rem(args[0], args[1]))
+            case "mul":
+                self.emit_intermidiate(Mul(args[0], args[1]))
+            case "eq":
+                self.emit_intermidiate(Eq(args[0], args[1]))
+            case "lt":
+                self.emit_intermidiate(Lt(args[0], args[1]))
             case _:
-                raise RuntimeError(str(invokable))
+                raise RuntimeError(str(intrinsic))
+
+    def visit_application_variable(
+        self,
+        invokable: Var,
+        args: list[Var],
+    ) -> None:
+        self.emit_intermidiate(Invokation(invokable, args))
 
     @override
     def visit_lambda(self, tree: Closure) -> None:

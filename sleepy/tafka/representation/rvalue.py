@@ -1,6 +1,6 @@
 from abc import abstractproperty
 from dataclasses import dataclass
-from typing import override
+from typing import cast, override
 
 from .kind import Bool, Kind, Signature
 from .node import Node
@@ -21,6 +21,25 @@ class Intrinsic(RValue):
     @abstractproperty
     def signature(self) -> Signature:
         raise NotImplementedError
+
+
+@dataclass(repr=False)
+class Invokation(RValue):
+    closure: Var
+    args: list[Var]
+
+    @override
+    @property
+    def value(self) -> Kind:
+        return cast(Signature, self.closure.kind).value
+
+    @override
+    def __repr__(self) -> str:
+        return (
+            f"invoke({self.closure})"
+            f"({', '.join(map(repr, self.args))}): "
+            f"{self.value}"
+        )
 
 
 @dataclass(repr=False)
