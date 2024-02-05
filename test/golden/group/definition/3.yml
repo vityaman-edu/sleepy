@@ -20,6 +20,8 @@ tafka: |-
     goto label(2)
   label(2):
   var(5): bool = eq(var(3): int, var(3): int): bool
-  
+
   var(6): int = load(const(0): int): int
   return var(6): int
+
+asmik-virt: "TODO"

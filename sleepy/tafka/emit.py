@@ -209,3 +209,6 @@ class TafkaEmitVisitor(Visitor[None]):
 
     def next_lbl(self) -> Label:
         return Label(next(self.lbl_names))
+
+
+TafkaUnit = TafkaEmitVisitor

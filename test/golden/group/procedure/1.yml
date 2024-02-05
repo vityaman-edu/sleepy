@@ -18,3 +18,5 @@ tafka: |-
     var(8): int = invoke(var(5): (int, int) -> int)(var(6): int, var(7): int): int
     var(9): int = load(const(0): int): int
     return var(9): int
+
+asmik-virt: "TODO"
