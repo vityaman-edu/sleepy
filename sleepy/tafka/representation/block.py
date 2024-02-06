@@ -4,7 +4,7 @@ from typing import cast, override
 from .kind import Kind, Signature
 from .node import Node
 from .rvalue import RValue
-from .symbol import Var
+from .symbol import Const, Var
 
 
 class Statement(Node):
@@ -97,6 +97,10 @@ class Procedure(Node):
             [_.kind for _ in self.parameters],
             self.value,
         )
+
+    @property
+    def const(self) -> Const:
+        return Const(self.name, self.signature)
 
     @override
     def __repr__(self) -> str:

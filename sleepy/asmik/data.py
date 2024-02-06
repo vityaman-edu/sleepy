@@ -27,4 +27,4 @@ class IntegerData(Data):
 
     @override
     def __repr__(self) -> str:
-        return f"{self.value} # const({self.value}): int"
+        return f"{self.value}"

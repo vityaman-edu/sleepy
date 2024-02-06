@@ -2,6 +2,7 @@ import sleepy.tafka.representation as tafka
 from sleepy.tafka.emit import TafkaUnit
 
 from .argument import Immediate, Integer, Unassigned
+from .argument import PhysicalRegister as PhysReg
 from .argument import Register as Reg
 from .argument import VirtualRegister as VirtReg
 from .data import IntegerData
@@ -27,14 +28,23 @@ from .memory import Memory
 class AsmikEmiter:
     def __init__(self) -> None:
         self.virt_regs = (VirtReg(n) for n in range(10000))
-        self.unassigned: dict[str, int] = {}
         self.memory = Memory()
-        self.regs: dict[str, VirtReg] = {}
+        self.regs: dict[str, Reg] = {}
 
         self.resolved: dict[str, int] = {}
 
         self.block: tafka.Block
         self.block_until: list[tafka.Block] = []
+
+    def emit_procedure(self, proc: tafka.Procedure) -> None:
+        addr = self.memory.data_put(IntegerData(self.next_instr_addr))
+        self.resolved[repr(proc.const)] = addr
+
+        for i, param in enumerate(proc.parameters):
+            param_reg = self.reg_var(param)
+            self.emit_i(mov(param_reg, PhysReg.arg(i + 1)))
+
+        self.emit_block(proc.entry)
 
     def emit_block(self, block: tafka.Block) -> None:
         if (
@@ -43,7 +53,7 @@ class AsmikEmiter:
         ):
             return
 
-        self.resolved[repr(block.label)] = len(self.memory.instr) * 4
+        self.resolved[repr(block.label)] = self.next_instr_addr
 
         self.block = block
         for statement in block.statements:
@@ -67,20 +77,14 @@ class AsmikEmiter:
 
     def emit_jump_return(self, stmt: tafka.Return) -> None:
         self.emit_i(mov(Reg.a1(), self.reg_var(stmt.value)))
-        false = self.reg_tmp()
-        self.emit_i(movi(false, Integer(0)))
-        self.emit_i(Brn(false, Reg.ra()))
+        self.emit_i(Brn(Reg.ze(), Reg.ra()))
 
     def emit_jump_goto(self, stmt: tafka.Goto) -> None:
-        false = self.reg_tmp()
-        false_val = Integer(0)
-        self.emit_i(movi(false, false_val))
-
         label = self.reg_tmp()
         label_val = Unassigned(repr(stmt.block.label))
         self.emit_i(movi(label, label_val))
 
-        self.emit_i(Brn(false, label))
+        self.emit_i(Brn(Reg.ze(), label))
 
     def emit_jump_cond(self, conditional: tafka.Conditional) -> None:
         self.block_until.append(conditional.next_block)
@@ -165,12 +169,27 @@ class AsmikEmiter:
         target: tafka.Var,
         source: tafka.Invokation,
     ) -> None:
-        raise NotImplementedError
+        for i, arg in enumerate(source.args):
+            arg_reg = self.reg_var(arg)
+            self.emit_i(mov(PhysReg.arg(i + 1), arg_reg))
+
+        prev_ra = self.reg_tmp()
+        self.emit_i(mov(prev_ra, Reg.ra()))
+
+        self.emit_i(Addim(Reg.ra(), Reg.ip(), Integer(4)))
+
+        proc_reg = self.reg_var(source.closure)
+        self.emit_i(Brn(Reg.ze(), proc_reg))
+
+        res_reg = self.reg_var(target)
+        self.emit_i(mov(res_reg, Reg.a1()))
+
+        self.emit_i(mov(Reg.ra(), prev_ra))
 
     def emit_i(self, instr: Instruction) -> None:
         self.memory.instr.append(instr)
 
-    def reg_var(self, var: tafka.Var) -> VirtReg:
+    def reg_var(self, var: tafka.Var) -> Reg:
         var_repr = repr(var)
         if var_repr not in self.regs:
             self.regs[var_repr] = self.reg_tmp()
@@ -185,7 +204,14 @@ class AsmikEmiter:
                 data = IntegerData(int(cnst.name))
                 addr = self.memory.data_put(data)
                 return Integer(addr)
-        raise NotImplementedError
+            case tafka.Signature():
+                return Unassigned(repr(cnst))
+            case _:
+                raise NotImplementedError
+
+    @property
+    def next_instr_addr(self) -> int:
+        return len(self.memory.instr) * 4
 
 
 AsmikUnit = AsmikEmiter
@@ -204,5 +230,7 @@ def asmik_resolve(asmik: AsmikUnit) -> None:
 def asmik_emit(tafka: TafkaUnit) -> AsmikUnit:
     asmik = AsmikEmiter()
     asmik.emit_block(tafka.main)
+    for proc in tafka.procedures:
+        asmik.emit_procedure(proc)
     asmik_resolve(asmik)
     return asmik

@@ -16,39 +16,39 @@ tafka: |-
   var(4): bool = eq(var(2): int, var(3): int): bool
   if var(4): bool then label(0) else label(1) end label(2)
   label(0):
-    var(5): int = load(const(1): int): int
-    goto label(2)
+  var(5): int = load(const(1): int): int
+  goto label(2)
   label(1):
-    var(6): int = load(const(2): int): int
-    var(7): int = load(const(2): int): int
-    var(8): int = rem(var(6): int, var(7): int): int
-    var(5): int = copy(var(8): int): int
-    goto label(2)
+  var(6): int = load(const(2): int): int
+  var(7): int = load(const(2): int): int
+  var(8): int = rem(var(6): int, var(7): int): int
+  var(5): int = copy(var(8): int): int
+  goto label(2)
   label(2):
   var(9): int = load(const(2): int): int
   var(10): int = load(const(3): int): int
   var(11): bool = lt(var(9): int, var(10): int): bool
   if var(11): bool then label(3) else label(4) end label(5)
   label(3):
-    var(12): int = load(const(1): int): int
-    var(13): int = load(const(1): int): int
-    var(14): int = mul(var(12): int, var(13): int): int
-    goto label(5)
+  var(12): int = load(const(1): int): int
+  var(13): int = load(const(1): int): int
+  var(14): int = mul(var(12): int, var(13): int): int
+  goto label(5)
   label(4):
-    var(15): int = load(const(0): int): int
-    var(14): int = copy(var(15): int): int
-    goto label(5)
+  var(15): int = load(const(0): int): int
+  var(14): int = copy(var(15): int): int
+  goto label(5)
   label(5):
   var(16): int = sum(var(5): int, var(14): int): int
   return var(16): int
 
 asmik-virt: |-
   memory stack
-  0000: 2 # const(2): int
-  0008: 3 # const(3): int
-  0016: 5 # const(5): int
-  0024: 1 # const(1): int
-  0032: 0 # const(0): int
+  0000: 2
+  0008: 3
+  0016: 5
+  0024: 1
+  0032: 0
   memory instr
   0000: addim v0, ze, 0
   0004: load v0, v0
@@ -62,44 +62,39 @@ asmik-virt: |-
   0036: orb v4, v4, v5
   0040: addim v6, ze, 18446744073709551615
   0044: xorb v4, v4, v6
-  0048: addim v7, ze, 76
+  0048: addim v7, ze, 72
   0052: brn v4, v7
   0056: addim v8, ze, 24
   0060: load v8, v8
-  0064: addim v9, ze, 0
-  0068: addim v10, ze, 112
-  0072: brn v9, v10
-  0076: addim v11, ze, 0
-  0080: load v11, v11
-  0084: addim v12, ze, 0
-  0088: load v12, v12
-  0092: remi v13, v11, v12
-  0096: addim v8, v13, 0
-  0100: addim v14, ze, 0
-  0104: addim v15, ze, 112
-  0108: brn v14, v15
-  0112: addim v16, ze, 0
-  0116: load v16, v16
-  0120: addim v17, ze, 8
-  0124: load v17, v17
-  0128: slti v18, v16, v17
-  0132: addim v19, ze, 172
-  0136: brn v18, v19
-  0140: addim v20, ze, 24
-  0144: load v20, v20
-  0148: addim v21, ze, 24
-  0152: load v21, v21
-  0156: muli v22, v20, v21
-  0160: addim v23, ze, 0
-  0164: addim v24, ze, 196
-  0168: brn v23, v24
-  0172: addim v25, ze, 32
-  0176: load v25, v25
-  0180: addim v22, v25, 0
-  0184: addim v26, ze, 0
-  0188: addim v27, ze, 196
-  0192: brn v26, v27
-  0196: addi v28, v8, v22
-  0200: addim a1, v28, 0
-  0204: addim v29, ze, 0
-  0208: brn v29, ra
+  0064: addim v9, ze, 104
+  0068: brn ze, v9
+  0072: addim v10, ze, 0
+  0076: load v10, v10
+  0080: addim v11, ze, 0
+  0084: load v11, v11
+  0088: remi v12, v10, v11
+  0092: addim v8, v12, 0
+  0096: addim v13, ze, 104
+  0100: brn ze, v13
+  0104: addim v14, ze, 0
+  0108: load v14, v14
+  0112: addim v15, ze, 8
+  0116: load v15, v15
+  0120: slti v16, v14, v15
+  0124: addim v17, ze, 160
+  0128: brn v16, v17
+  0132: addim v18, ze, 24
+  0136: load v18, v18
+  0140: addim v19, ze, 24
+  0144: load v19, v19
+  0148: muli v20, v18, v19
+  0152: addim v21, ze, 180
+  0156: brn ze, v21
+  0160: addim v22, ze, 32
+  0164: load v22, v22
+  0168: addim v20, v22, 0
+  0172: addim v23, ze, 180
+  0176: brn ze, v23
+  0180: addi v24, v8, v20
+  0184: addim a1, v24, 0
+  0188: brn ze, ra

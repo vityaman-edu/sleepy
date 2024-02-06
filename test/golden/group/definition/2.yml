@@ -8,27 +8,21 @@ sleepy: |-
 
 tafka: |-
   label(main):
-
   var(0): int = load(const(1): int): int
-
   var(1): int = load(const(1): int): int
   var(2): bool = eq(var(0): int, var(1): int): bool
-
   var(3): int = load(const(2): int): int
-
   var(4): int = load(const(2): int): int
   var(5): bool = eq(var(3): int, var(4): int): bool
-
   var(6): int = load(const(3): int): int
   var(7): bool = eq(var(3): int, var(6): int): bool
-
   return var(7): bool
 
 asmik-virt: |-
   memory stack
-  0000: 1 # const(1): int
-  0008: 2 # const(2): int
-  0016: 3 # const(3): int
+  0000: 1
+  0008: 2
+  0016: 3
   memory instr
   0000: addim v0, ze, 0
   0004: load v0, v0
@@ -56,5 +50,4 @@ asmik-virt: |-
   0092: addim v13, ze, 18446744073709551615
   0096: xorb v11, v11, v13
   0100: addim a1, v11, 0
-  0104: addim v14, ze, 0
-  0108: brn v14, ra
+  0104: brn ze, ra

@@ -8,18 +8,18 @@ tafka: |-
   var(2): bool = eq(var(0): int, var(1): int): bool
   if var(2): bool then label(0) else label(1) end label(2)
   label(0):
-    var(3): int = load(const(1): int): int
-    goto label(2)
+  var(3): int = load(const(1): int): int
+  goto label(2)
   label(1):
-    var(4): int = load(const(1): int): int
-    var(3): int = copy(var(4): int): int
-    goto label(2)
+  var(4): int = load(const(1): int): int
+  var(3): int = copy(var(4): int): int
+  goto label(2)
   label(2):
   return var(3): int
 
 asmik-virt: |-
   memory stack
-  0000: 1 # const(1): int
+  0000: 1
   memory instr
   0000: addim v0, ze, 0
   0004: load v0, v0
@@ -30,19 +30,16 @@ asmik-virt: |-
   0024: orb v2, v2, v3
   0028: addim v4, ze, 18446744073709551615
   0032: xorb v2, v2, v4
-  0036: addim v5, ze, 64
+  0036: addim v5, ze, 60
   0040: brn v2, v5
   0044: addim v6, ze, 0
   0048: load v6, v6
-  0052: addim v7, ze, 0
-  0056: addim v8, ze, 88
-  0060: brn v7, v8
-  0064: addim v9, ze, 0
-  0068: load v9, v9
-  0072: addim v6, v9, 0
-  0076: addim v10, ze, 0
-  0080: addim v11, ze, 88
-  0084: brn v10, v11
-  0088: addim a1, v6, 0
-  0092: addim v12, ze, 0
-  0096: brn v12, ra
+  0052: addim v7, ze, 80
+  0056: brn ze, v7
+  0060: addim v8, ze, 0
+  0064: load v8, v8
+  0068: addim v6, v8, 0
+  0072: addim v9, ze, 80
+  0076: brn ze, v9
+  0080: addim a1, v6, 0
+  0084: brn ze, ra

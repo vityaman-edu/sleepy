@@ -5,12 +5,30 @@ sleepy: |-
 tafka: |-
   procedure 0(var(0): int) -> int
   label(0):
-    return var(0): int
-
+  return var(0): int
   label(main):
-    var(1): (int) -> int = load(const(0): (int) -> int): (int) -> int
-    var(2): int = load(const(5): int): int
-    var(3): int = invoke(var(1): (int) -> int)(var(2): int): int
-    return var(3): int
+  var(1): (int) -> int = load(const(0): (int) -> int): (int) -> int
+  var(2): int = load(const(5): int): int
+  var(3): int = invoke(var(1): (int) -> int)(var(2): int): int
+  return var(3): int
 
-asmik-virt: TODO
+asmik-virt: |-
+  memory stack
+  0000: 5
+  0008: 48
+  memory instr
+  0000: addim v0, ze, 8
+  0004: load v0, v0
+  0008: addim v1, ze, 0
+  0012: load v1, v1
+  0016: addim a1, v1, 0
+  0020: addim v2, ra, 0
+  0024: addim ra, ip, 4
+  0028: brn ze, v0
+  0032: addim v3, a1, 0
+  0036: addim ra, v2, 0
+  0040: addim a1, v3, 0
+  0044: brn ze, ra
+  0048: addim v4, a1, 0
+  0052: addim a1, v4, 0
+  0056: brn ze, ra

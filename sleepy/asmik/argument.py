@@ -15,16 +15,20 @@ class Register(Argument):
         return PhysicalRegister("ze")
 
     @staticmethod
-    def a1() -> "PhysicalRegister":
-        return PhysicalRegister("a1")
+    def ip() -> "PhysicalRegister":
+        return PhysicalRegister("ip")
+
+    @staticmethod
+    def sp() -> "PhysicalRegister":
+        return PhysicalRegister("sp")
 
     @staticmethod
     def ra() -> "PhysicalRegister":
         return PhysicalRegister("ra")
 
     @staticmethod
-    def ip() -> "PhysicalRegister":
-        return PhysicalRegister("ip")
+    def a1() -> "PhysicalRegister":
+        return PhysicalRegister("a1")
 
 
 @dataclass(repr=False)
@@ -43,6 +47,13 @@ class PhysicalRegister(Register):
     @override
     def __repr__(self) -> str:
         return self.name
+
+    @staticmethod
+    def arg(number: int) -> "PhysicalRegister":
+        max_number = 6
+        if number > max_number:
+            raise NotImplementedError
+        return PhysicalRegister(f"a{number}")
 
 
 class Immediate(Argument):
