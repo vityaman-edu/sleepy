@@ -39,6 +39,5 @@ asmik-virt: |-
   0056: addim v9, ze, 16
   0060: load v9, v9
   0064: addim a1, v9, 0
-  0068: hlt
-
-asmik-virt-interp: "TODO"
+  0068: addim v10, ze, 1
+  0072: br v10, ra

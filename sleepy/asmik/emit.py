@@ -8,8 +8,8 @@ from .data import IntegerData
 from .instruction import (
     Addi,
     Addim,
+    Br,
     Divi,
-    Hlt,
     Instruction,
     Load,
     Muli,
@@ -18,6 +18,7 @@ from .instruction import (
     Slti,
     Xorb,
     mov,
+    movi,
 )
 from .memory import Memory
 
@@ -29,7 +30,21 @@ class AsmikEmiter:
         self.memory = Memory()
         self.regs: dict[str, VirtReg] = {}
 
+        self.resolved: dict[str, int] = {}
+
+        self.block: tafka.Block
+        self.block_until: list[tafka.Block] = []
+
     def emit_block(self, block: tafka.Block) -> None:
+        if (
+            len(self.block_until) > 0
+            and self.block_until[-1].label == block.label
+        ):
+            return
+
+        self.resolved[repr(block.label)] = len(self.memory.instr) * 4
+
+        self.block = block
         for statement in block.statements:
             self.emit_stmt(statement)
 
@@ -42,13 +57,47 @@ class AsmikEmiter:
 
     def emit_jump(self, jump: tafka.Jump) -> None:
         match jump:
-            case tafka.Return(value):
-                self.emit_i(mov(Reg.a1(), self.reg_var(value)))
-                self.emit_i(Hlt())
-            case tafka.Goto(block):
-                raise NotImplementedError
-            case tafka.Conditional(cond, then_br, else_br, next):
-                raise NotImplementedError
+            case tafka.Return() as ret:
+                self.emit_jump_return(ret)
+            case tafka.Goto() as goto:
+                self.emit_jump_goto(goto)
+            case tafka.Conditional() as cond:
+                self.emit_jump_cond(cond)
+
+    def emit_jump_return(self, stmt: tafka.Return) -> None:
+        self.emit_i(mov(Reg.a1(), self.reg_var(stmt.value)))
+        true = self.reg_tmp()
+        self.emit_i(movi(true, Integer(1)))
+        self.emit_i(Br(true, Reg.ra()))
+
+    def emit_jump_goto(self, stmt: tafka.Goto) -> None:
+        true = self.reg_tmp()
+        true_val = Integer(1)
+        self.emit_i(movi(true, true_val))
+
+        label = self.reg_tmp()
+        label_val = Unassigned(repr(stmt.block.label))
+        self.emit_i(movi(label, label_val))
+
+        self.emit_i(Br(true, label))
+
+    def emit_jump_cond(self, conditional: tafka.Conditional) -> None:
+        self.block_until.append(conditional.next_block)
+
+        cond = self.reg_var(conditional.condition)
+
+        els = self.reg_tmp()
+        els_val = Unassigned(repr(conditional.else_branch.label))
+        self.emit_i(movi(els, els_val))
+
+        self.emit_i(Br(cond, els))
+
+        self.emit_block(conditional.then_branch)
+        self.emit_block(conditional.else_branch)
+
+        self.block_until.pop()
+
+        self.emit_block(conditional.next_block)
 
     def emit_set_stmt(self, stmt: tafka.Set) -> None:
         match stmt.source:
@@ -129,13 +178,24 @@ class AsmikEmiter:
                 data = IntegerData(int(cnst.name))
                 addr = self.memory.data_put(data)
                 return Integer(addr)
-        return Unassigned(f"{cnst!r}")
+        raise NotImplementedError
 
 
 AsmikUnit = AsmikEmiter
 
 
+def asmik_resolve(asmik: AsmikUnit) -> None:
+    for instr in asmik.memory.instr:
+        if (
+            isinstance(instr, Addim)  #
+            and isinstance(instr.rhs, Unassigned)
+        ):
+            label = instr.rhs.label
+            instr.rhs = Integer(asmik.resolved[label])
+
+
 def asmik_emit(tafka: TafkaUnit) -> AsmikUnit:
     asmik = AsmikEmiter()
     asmik.emit_block(tafka.main)
+    asmik_resolve(asmik)
     return asmik

@@ -18,6 +18,10 @@ class Register(Argument):
     def a1(cls) -> "PhysicalRegister":
         return PhysicalRegister("a1")
 
+    @classmethod
+    def ra(cls) -> "PhysicalRegister":
+        return PhysicalRegister("ra")
+
 
 @dataclass(repr=False)
 class VirtualRegister(Register):

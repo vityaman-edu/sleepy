@@ -196,19 +196,19 @@ class Stor(Instruction):
 
 
 @dataclass(repr=False)
-class Brn(Instruction):
+class Br(Instruction):
     cond: Register
     label: Register
 
     @override
     @property
     def name(self) -> str:
-        return "brn"
+        return "br"
 
     @override
     @property
     def action(self) -> str:
-        return "ip <- (not cond) ? label : (ip + 4)"
+        return "ip <- (cond) ? label : (ip + 4)"
 
     @override
     def __repr__(self) -> str:
@@ -234,3 +234,7 @@ class Hlt(Instruction):
 
 def mov(dst: Register, src: Register) -> Instruction:
     return Addim(dst, src, Integer(0))
+
+
+def movi(dst: Register, src: Immediate) -> Instruction:
+    return Addim(dst, Register.ze(), src)
