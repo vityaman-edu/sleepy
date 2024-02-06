@@ -10,8 +10,6 @@ tafka: |-
   var(2): int = load(const(3): int): int
   var(3): int = sum(var(1): int, var(2): int): int
   var(4): int = sum(var(0): int, var(3): int): int
-
-  var(5): int = load(const(0): int): int
-  return var(5): int
+  return var(4): int
 
 asmik-virt: TODO

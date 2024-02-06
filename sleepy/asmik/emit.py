@@ -8,7 +8,7 @@ from .data import IntegerData
 from .instruction import (
     Addi,
     Addim,
-    Br,
+    Brn,
     Divi,
     Instruction,
     Load,
@@ -66,20 +66,20 @@ class AsmikEmiter:
 
     def emit_jump_return(self, stmt: tafka.Return) -> None:
         self.emit_i(mov(Reg.a1(), self.reg_var(stmt.value)))
-        true = self.reg_tmp()
-        self.emit_i(movi(true, Integer(1)))
-        self.emit_i(Br(true, Reg.ra()))
+        false = self.reg_tmp()
+        self.emit_i(movi(false, Integer(0)))
+        self.emit_i(Brn(false, Reg.ra()))
 
     def emit_jump_goto(self, stmt: tafka.Goto) -> None:
-        true = self.reg_tmp()
-        true_val = Integer(1)
-        self.emit_i(movi(true, true_val))
+        false = self.reg_tmp()
+        false_val = Integer(0)
+        self.emit_i(movi(false, false_val))
 
         label = self.reg_tmp()
         label_val = Unassigned(repr(stmt.block.label))
         self.emit_i(movi(label, label_val))
 
-        self.emit_i(Br(true, label))
+        self.emit_i(Brn(false, label))
 
     def emit_jump_cond(self, conditional: tafka.Conditional) -> None:
         self.block_until.append(conditional.next_block)
@@ -90,7 +90,7 @@ class AsmikEmiter:
         els_val = Unassigned(repr(conditional.else_branch.label))
         self.emit_i(movi(els, els_val))
 
-        self.emit_i(Br(cond, els))
+        self.emit_i(Brn(cond, els))
 
         self.emit_block(conditional.then_branch)
         self.emit_block(conditional.else_branch)
@@ -146,7 +146,7 @@ class AsmikEmiter:
                 self.emit_i(Slti(l2r, lhsr, rhsr))
                 self.emit_i(Slti(r2l, rhsr, lhsr))
                 self.emit_i(Orb(orb, l2r, r2l))
-                self.emit_i(Addim(neg, Reg.ze(), Integer(-1)))
+                self.emit_i(Addim(neg, Reg.ze(), Integer(2**64 - 1)))
                 self.emit_i(Xorb(dst, orb, neg))
             case tafka.Lt(lhs, rhs):
                 lhsr = self.reg_var(lhs)

@@ -196,19 +196,19 @@ class Stor(Instruction):
 
 
 @dataclass(repr=False)
-class Br(Instruction):
+class Brn(Instruction):
     cond: Register
     label: Register
 
     @override
     @property
     def name(self) -> str:
-        return "br"
+        return "brn"
 
     @override
     @property
     def action(self) -> str:
-        return "ip <- (cond) ? label : (ip + 4)"
+        return "ip <- (not cond) ? label : (ip + 4)"
 
     @override
     def __repr__(self) -> str:

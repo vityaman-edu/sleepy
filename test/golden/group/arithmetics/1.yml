@@ -12,15 +12,12 @@ tafka: |-
   var(6): int = load(const(2): int): int
   var(7): int = rem(var(5): int, var(6): int): int
   var(8): int = sum(var(2): int, var(7): int): int
-
-  var(9): int = load(const(0): int): int
-  return var(9): int
+  return var(8): int
 
 asmik-virt: |-
   memory stack
   0000: 5 # const(5): int
   0008: 2 # const(2): int
-  0016: 0 # const(0): int
   memory instr
   0000: addim v0, ze, 0
   0004: load v0, v0
@@ -36,8 +33,6 @@ asmik-virt: |-
   0044: load v6, v6
   0048: remi v7, v5, v6
   0052: addi v8, v2, v7
-  0056: addim v9, ze, 16
-  0060: load v9, v9
-  0064: addim a1, v9, 0
-  0068: addim v10, ze, 1
-  0072: br v10, ra
+  0056: addim a1, v8, 0
+  0060: addim v9, ze, 0
+  0064: brn v9, ra

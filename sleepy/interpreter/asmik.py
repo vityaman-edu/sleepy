@@ -1,12 +1,13 @@
 from typing import Any, cast
 
-from sleepy.asmik.argument import Integer, PhysicalRegister, Register
+from sleepy.asmik.argument import Integer, Register
 from sleepy.asmik.data import IntegerData
 from sleepy.asmik.emit import AsmikUnit
 from sleepy.asmik.instruction import (
     Addi,
     Addim,
     Andb,
+    Brn,
     Divi,
     Hlt,
     Instruction,
@@ -22,6 +23,8 @@ from sleepy.core import SleepyError
 
 
 class AsmikInterpreter:
+    STOP = 666666666
+
     def __init__(self) -> None:
         self.registers: dict[str, int] = {}
 
@@ -30,6 +33,7 @@ class AsmikInterpreter:
 
         self.registers["ze"] = 0
         self.registers["ip"] = 0
+        self.registers["ra"] = self.STOP
 
         self.running = False
 
@@ -44,15 +48,17 @@ class AsmikInterpreter:
         for instr in unit.memory.instr:
             self.instr.append(instr)
 
-        self.write(PhysicalRegister("ip"), 0)
+        self.write(Register.ip(), 0)
 
     def run(self) -> None:
         self.running = True
         while self.running:
-            ip = PhysicalRegister("ip")
+            ip = Register.ip()
             instr = self.instr[self.read(ip) // 4]
-            self.execute(instr)
             self.write(ip, self.read(ip) + 4)
+            self.execute(instr)
+            if self.read(ip) == self.STOP:
+                self.running = False
 
     def execute(self, instr: Instruction) -> None:
         match instr:
@@ -80,6 +86,9 @@ class AsmikInterpreter:
                 self.write(dst, self.stack[self.read(src_addr)])
             case Stor(dst_addr, src):
                 self.stack[self.read(dst_addr)] = self.read(src)
+            case Brn(cond, label):
+                if self.read(cond) % 2 == 0:
+                    self.write(Register.ip(), self.read(label))
             case Hlt():
                 self.running = False
 

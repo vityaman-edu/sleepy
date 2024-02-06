@@ -10,17 +10,21 @@ class Argument(ABC):
 
 
 class Register(Argument):
-    @classmethod
-    def ze(cls) -> "PhysicalRegister":
+    @staticmethod
+    def ze() -> "PhysicalRegister":
         return PhysicalRegister("ze")
 
-    @classmethod
-    def a1(cls) -> "PhysicalRegister":
+    @staticmethod
+    def a1() -> "PhysicalRegister":
         return PhysicalRegister("a1")
 
-    @classmethod
-    def ra(cls) -> "PhysicalRegister":
+    @staticmethod
+    def ra() -> "PhysicalRegister":
         return PhysicalRegister("ra")
+
+    @staticmethod
+    def ip() -> "PhysicalRegister":
+        return PhysicalRegister("ip")
 
 
 @dataclass(repr=False)
