@@ -1,12 +1,8 @@
 from test.program.parse import parse
 
-from sleepy.tafka.emit import TafkaEmitVisitor
+from sleepy.tafka.emit import TafkaUnit
 
 
-def tafka_emit(source: str) -> TafkaEmitVisitor:
+def tafka_emit(source: str) -> TafkaUnit:
     unit = parse(source)
-
-    tafka = TafkaEmitVisitor(unit)
-    tafka.visit_program(unit.program)
-
-    return tafka
+    return TafkaUnit.emitted_from(unit)

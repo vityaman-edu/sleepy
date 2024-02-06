@@ -21,13 +21,13 @@ class Instruction(ABC):
 
 @dataclass(repr=False)
 class BinRegOperation(Instruction):
-    result: Register
-    left: Register
-    right: Register
+    dst: Register
+    lhs: Register
+    rhs: Register
 
     @override
     def __repr__(self) -> str:
-        return f"{self.name} {self.result}, {self.left}, {self.right}"
+        return f"{self.name} {self.dst}, {self.lhs}, {self.rhs}"
 
 
 @dataclass(repr=False)

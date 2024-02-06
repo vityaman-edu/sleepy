@@ -14,4 +14,4 @@ tafka: |-
     var(4): int = load(const(0): int): int
     return var(4): int
 
-asmik-virt: "TODO"
+asmik-virt: TODO

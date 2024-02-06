@@ -4,6 +4,7 @@ from sleepy.tafka.emit import TafkaUnit
 from .argument import Immediate, Integer, Unassigned
 from .argument import Register as Reg
 from .argument import VirtualRegister as VirtReg
+from .data import IntegerData
 from .instruction import (
     Addi,
     Addim,
@@ -18,13 +19,14 @@ from .instruction import (
     Xorb,
     mov,
 )
+from .memory import Memory
 
 
 class AsmikEmiter:
     def __init__(self) -> None:
         self.virt_regs = (VirtReg(n) for n in range(10000))
         self.unassigned: dict[str, int] = {}
-        self.memory_instr: list[Instruction] = []
+        self.memory = Memory()
         self.regs: dict[str, VirtReg] = {}
 
     def emit_block(self, block: tafka.Block) -> None:
@@ -110,7 +112,7 @@ class AsmikEmiter:
         raise NotImplementedError
 
     def emit_i(self, instr: Instruction) -> None:
-        self.memory_instr.append(instr)
+        self.memory.instr.append(instr)
 
     def reg_var(self, var: tafka.Var) -> VirtReg:
         var_repr = repr(var)
@@ -122,6 +124,11 @@ class AsmikEmiter:
         return next(self.virt_regs)
 
     def addr_of(self, cnst: tafka.Const) -> Immediate:
+        match cnst.kind:
+            case tafka.Int():
+                data = IntegerData(int(cnst.name))
+                addr = self.memory.data_put(data)
+                return Integer(addr)
         return Unassigned(f"{cnst!r}")
 
 

@@ -17,21 +17,28 @@ tafka: |-
   return var(9): int
 
 asmik-virt: |-
-  addim v0, ze, <const(5): int>
-  load v0, v0
-  addim v1, ze, <const(2): int>
-  load v1, v1
-  divi v2, v0, v1
-  addim v3, ze, <const(2): int>
-  load v3, v3
-  addim v4, ze, <const(2): int>
-  load v4, v4
-  addi v5, v3, v4
-  addim v6, ze, <const(2): int>
-  load v6, v6
-  remi v7, v5, v6
-  addi v8, v2, v7
-  addim v9, ze, <const(0): int>
-  load v9, v9
-  addim a1, v9, 0
-  hlt
+  memory stack
+  0000: 5 # const(5): int
+  0008: 2 # const(2): int
+  0016: 0 # const(0): int
+  memory instr
+  0000: addim v0, ze, 0
+  0004: load v0, v0
+  0008: addim v1, ze, 8
+  0012: load v1, v1
+  0016: divi v2, v0, v1
+  0020: addim v3, ze, 8
+  0024: load v3, v3
+  0028: addim v4, ze, 8
+  0032: load v4, v4
+  0036: addi v5, v3, v4
+  0040: addim v6, ze, 8
+  0044: load v6, v6
+  0048: remi v7, v5, v6
+  0052: addi v8, v2, v7
+  0056: addim v9, ze, 16
+  0060: load v9, v9
+  0064: addim a1, v9, 0
+  0068: hlt
+
+asmik-virt-interp: "TODO"
