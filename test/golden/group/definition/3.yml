@@ -22,4 +22,40 @@ tafka: |-
   var(5): bool = eq(var(3): int, var(3): int): bool
   return var(5): bool
 
-asmik-virt: TODO
+asmik-virt: |-
+  memory stack
+  0000: 1 # const(1): int
+  0008: 0 # const(0): int
+  0016: 2 # const(2): int
+  0024: 3 # const(3): int
+  memory instr
+  0000: addim v0, ze, 0
+  0004: load v0, v0
+  0008: addim v1, ze, 8
+  0012: load v1, v1
+  0016: slti v2, v0, v1
+  0020: slti v3, v1, v0
+  0024: orb v2, v2, v3
+  0028: addim v4, ze, 18446744073709551615
+  0032: xorb v2, v2, v4
+  0036: addim v5, ze, 64
+  0040: brn v2, v5
+  0044: addim v6, ze, 16
+  0048: load v6, v6
+  0052: addim v7, ze, 0
+  0056: addim v8, ze, 88
+  0060: brn v7, v8
+  0064: addim v9, ze, 24
+  0068: load v9, v9
+  0072: addim v6, v9, 0
+  0076: addim v10, ze, 0
+  0080: addim v11, ze, 88
+  0084: brn v10, v11
+  0088: slti v12, v6, v6
+  0092: slti v13, v6, v6
+  0096: orb v12, v12, v13
+  0100: addim v14, ze, 18446744073709551615
+  0104: xorb v12, v12, v14
+  0108: addim a1, v12, 0
+  0112: addim v15, ze, 0
+  0116: brn v15, ra

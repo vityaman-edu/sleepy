@@ -42,4 +42,64 @@ tafka: |-
   var(16): int = sum(var(5): int, var(14): int): int
   return var(16): int
 
-asmik-virt: TODO
+asmik-virt: |-
+  memory stack
+  0000: 2 # const(2): int
+  0008: 3 # const(3): int
+  0016: 5 # const(5): int
+  0024: 1 # const(1): int
+  0032: 0 # const(0): int
+  memory instr
+  0000: addim v0, ze, 0
+  0004: load v0, v0
+  0008: addim v1, ze, 8
+  0012: load v1, v1
+  0016: addi v2, v0, v1
+  0020: addim v3, ze, 16
+  0024: load v3, v3
+  0028: slti v4, v2, v3
+  0032: slti v5, v3, v2
+  0036: orb v4, v4, v5
+  0040: addim v6, ze, 18446744073709551615
+  0044: xorb v4, v4, v6
+  0048: addim v7, ze, 76
+  0052: brn v4, v7
+  0056: addim v8, ze, 24
+  0060: load v8, v8
+  0064: addim v9, ze, 0
+  0068: addim v10, ze, 112
+  0072: brn v9, v10
+  0076: addim v11, ze, 0
+  0080: load v11, v11
+  0084: addim v12, ze, 0
+  0088: load v12, v12
+  0092: remi v13, v11, v12
+  0096: addim v8, v13, 0
+  0100: addim v14, ze, 0
+  0104: addim v15, ze, 112
+  0108: brn v14, v15
+  0112: addim v16, ze, 0
+  0116: load v16, v16
+  0120: addim v17, ze, 8
+  0124: load v17, v17
+  0128: slti v18, v16, v17
+  0132: addim v19, ze, 172
+  0136: brn v18, v19
+  0140: addim v20, ze, 24
+  0144: load v20, v20
+  0148: addim v21, ze, 24
+  0152: load v21, v21
+  0156: muli v22, v20, v21
+  0160: addim v23, ze, 0
+  0164: addim v24, ze, 196
+  0168: brn v23, v24
+  0172: addim v25, ze, 32
+  0176: load v25, v25
+  0180: addim v22, v25, 0
+  0184: addim v26, ze, 0
+  0188: addim v27, ze, 196
+  0192: brn v26, v27
+  0196: addi v28, v8, v22
+  0200: addim a1, v28, 0
+  0204: addim v29, ze, 0
+  0208: brn v29, ra
