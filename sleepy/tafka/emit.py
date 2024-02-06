@@ -38,7 +38,7 @@ from sleepy.tafka.representation import (
 )
 from sleepy.tafka.representation import Conditional as TafConditional
 from sleepy.tafka.representation import Kind as TafKind
-from sleepy.tafka.representation.rvalue import Invokation
+from sleepy.tafka.representation.rvalue import And, Invokation
 
 UniqueNameSequence = Generator[str, None, None]
 
@@ -62,7 +62,6 @@ class TafkaEmitVisitor(Visitor[None]):
     def visit_program(self, tree: Program) -> None:
         for statement in tree.statements:
             self.visit_expression(statement)
-        self.emit_intermidiate(Load(Const("0", Int())))
         self.emit_statement(Return(self.last_result))
 
     @override
@@ -136,8 +135,10 @@ class TafkaEmitVisitor(Visitor[None]):
                 self.emit_intermidiate(Eq(args[0], args[1]))
             case "lt":
                 self.emit_intermidiate(Lt(args[0], args[1]))
+            case "and":
+                self.emit_intermidiate(And(args[0], args[1]))
             case _:
-                raise RuntimeError(str(intrinsic))
+                raise NotImplementedError(str(intrinsic))
 
     def visit_application_variable(
         self,
@@ -209,3 +210,12 @@ class TafkaEmitVisitor(Visitor[None]):
 
     def next_lbl(self) -> Label:
         return Label(next(self.lbl_names))
+
+    @staticmethod
+    def emitted_from(unit: ProgramUnit) -> "TafkaUnit":
+        tafka = TafkaEmitVisitor(unit)
+        tafka.visit_program(unit.program)
+        return tafka
+
+
+TafkaUnit = TafkaEmitVisitor

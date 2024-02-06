@@ -15,5 +15,34 @@ tafka: |-
     var(3): int = copy(var(4): int): int
     goto label(2)
   label(2):
-  var(5): int = load(const(0): int): int
-  return var(5): int
+  return var(3): int
+
+asmik-virt: |-
+  memory stack
+  0000: 1 # const(1): int
+  memory instr
+  0000: addim v0, ze, 0
+  0004: load v0, v0
+  0008: addim v1, ze, 0
+  0012: load v1, v1
+  0016: slti v2, v0, v1
+  0020: slti v3, v1, v0
+  0024: orb v2, v2, v3
+  0028: addim v4, ze, 18446744073709551615
+  0032: xorb v2, v2, v4
+  0036: addim v5, ze, 64
+  0040: brn v2, v5
+  0044: addim v6, ze, 0
+  0048: load v6, v6
+  0052: addim v7, ze, 0
+  0056: addim v8, ze, 88
+  0060: brn v7, v8
+  0064: addim v9, ze, 0
+  0068: load v9, v9
+  0072: addim v6, v9, 0
+  0076: addim v10, ze, 0
+  0080: addim v11, ze, 88
+  0084: brn v10, v11
+  0088: addim a1, v6, 0
+  0092: addim v12, ze, 0
+  0096: brn v12, ra

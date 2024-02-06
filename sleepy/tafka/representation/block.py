@@ -16,7 +16,7 @@ class Jump(Statement):
 
 
 @dataclass(repr=False)
-class Return(Statement):
+class Return(Jump):
     value: Var
 
     @override

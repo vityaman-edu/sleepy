@@ -190,3 +190,16 @@ class Lt(BinaryOperator):
     @property
     def value(self) -> Kind:
         return Bool()
+
+
+@dataclass(repr=False)
+class And(BinaryOperator):
+    @override
+    @property
+    def name(self) -> str:
+        return "and"
+
+    @override
+    @property
+    def value(self) -> Kind:
+        return Bool()

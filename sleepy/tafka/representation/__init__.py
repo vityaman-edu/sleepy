@@ -2,6 +2,7 @@ from .block import (
     Block,
     Conditional,
     Goto,
+    Jump,
     Label,
     Procedure,
     Return,
@@ -11,11 +12,13 @@ from .block import (
 from .kind import Int, Kind, Signature
 from .node import Node
 from .rvalue import (
+    And,
     BinaryOperator,
     Copy,
     Div,
     Eq,
     Intrinsic,
+    Invokation,
     Load,
     Lt,
     Mul,

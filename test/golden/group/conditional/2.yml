@@ -39,5 +39,74 @@ tafka: |-
     var(6): int = copy(var(11): int): int
     goto label(2)
   label(2):
-  var(13): int = load(const(0): int): int
-  return var(13): int
+  return var(6): int
+
+asmik-virt: |-
+  memory stack
+  0000: 1 # const(1): int
+  memory instr
+  0000: addim v0, ze, 0
+  0004: load v0, v0
+  0008: addim v1, ze, 0
+  0012: load v1, v1
+  0016: slti v2, v0, v1
+  0020: slti v3, v1, v0
+  0024: orb v2, v2, v3
+  0028: addim v4, ze, 18446744073709551615
+  0032: xorb v2, v2, v4
+  0036: addim v5, ze, 144
+  0040: brn v2, v5
+  0044: addim v6, ze, 0
+  0048: load v6, v6
+  0052: addim v7, ze, 0
+  0056: load v7, v7
+  0060: slti v8, v6, v7
+  0064: slti v9, v7, v6
+  0068: orb v8, v8, v9
+  0072: addim v10, ze, 18446744073709551615
+  0076: xorb v8, v8, v10
+  0080: addim v11, ze, 108
+  0084: brn v8, v11
+  0088: addim v12, ze, 0
+  0092: load v12, v12
+  0096: addim v13, ze, 0
+  0100: addim v14, ze, 132
+  0104: brn v13, v14
+  0108: addim v15, ze, 0
+  0112: load v15, v15
+  0116: addim v12, v15, 0
+  0120: addim v16, ze, 0
+  0124: addim v17, ze, 132
+  0128: brn v16, v17
+  0132: addim v18, ze, 0
+  0136: addim v19, ze, 248
+  0140: brn v18, v19
+  0144: addim v20, ze, 0
+  0148: load v20, v20
+  0152: addim v21, ze, 0
+  0156: load v21, v21
+  0160: slti v22, v20, v21
+  0164: slti v23, v21, v20
+  0168: orb v22, v22, v23
+  0172: addim v24, ze, 18446744073709551615
+  0176: xorb v22, v22, v24
+  0180: addim v25, ze, 208
+  0184: brn v22, v25
+  0188: addim v26, ze, 0
+  0192: load v26, v26
+  0196: addim v27, ze, 0
+  0200: addim v28, ze, 232
+  0204: brn v27, v28
+  0208: addim v29, ze, 0
+  0212: load v29, v29
+  0216: addim v26, v29, 0
+  0220: addim v30, ze, 0
+  0224: addim v31, ze, 232
+  0228: brn v30, v31
+  0232: addim v12, v26, 0
+  0236: addim v32, ze, 0
+  0240: addim v33, ze, 248
+  0244: brn v32, v33
+  0248: addim a1, v12, 0
+  0252: addim v34, ze, 0
+  0256: brn v34, ra

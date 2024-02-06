@@ -22,5 +22,39 @@ tafka: |-
   var(6): int = load(const(3): int): int
   var(7): bool = eq(var(3): int, var(6): int): bool
 
-  var(8): int = load(const(0): int): int
-  return var(8): int
+  return var(7): bool
+
+asmik-virt: |-
+  memory stack
+  0000: 1 # const(1): int
+  0008: 2 # const(2): int
+  0016: 3 # const(3): int
+  memory instr
+  0000: addim v0, ze, 0
+  0004: load v0, v0
+  0008: addim v1, ze, 0
+  0012: load v1, v1
+  0016: slti v2, v0, v1
+  0020: slti v3, v1, v0
+  0024: orb v2, v2, v3
+  0028: addim v4, ze, 18446744073709551615
+  0032: xorb v2, v2, v4
+  0036: addim v5, ze, 8
+  0040: load v5, v5
+  0044: addim v6, ze, 8
+  0048: load v6, v6
+  0052: slti v7, v5, v6
+  0056: slti v8, v6, v5
+  0060: orb v7, v7, v8
+  0064: addim v9, ze, 18446744073709551615
+  0068: xorb v7, v7, v9
+  0072: addim v10, ze, 16
+  0076: load v10, v10
+  0080: slti v11, v5, v10
+  0084: slti v12, v10, v5
+  0088: orb v11, v11, v12
+  0092: addim v13, ze, 18446744073709551615
+  0096: xorb v11, v11, v13
+  0100: addim a1, v11, 0
+  0104: addim v14, ze, 0
+  0108: brn v14, ra

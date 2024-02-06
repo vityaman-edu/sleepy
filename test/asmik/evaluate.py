@@ -4,11 +4,7 @@ from sleepy.syntax import Syntax2Program, parse_program
 from sleepy.tafka import TafkaUnit
 
 
-def main() -> None:
-    source = """
-        (if (eq 1 1) 999 666)
-    """
-
+def evaluate(source: str) -> str:
     syntax = parse_program(source)
     program = Syntax2Program.converted(syntax)
     tafka = TafkaUnit.emitted_from(program)
@@ -18,4 +14,4 @@ def main() -> None:
     interp.load(asmik)
     interp.run()
 
-    print(interp.state)  # noqa: T201
+    return str(interp.state["registers"]["a1"])
