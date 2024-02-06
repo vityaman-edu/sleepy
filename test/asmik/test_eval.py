@@ -20,6 +20,18 @@ import pytest
         ("(if (eq 1 2) 6 9)", "9"),
         ("(if (eq (rem 2 2) 0) 1 0)", "1"),
         ("(if (eq (div 2 2) 0) 1 0)", "0"),
+        ("(def a 7) a", "7"),
+        ("(def a 70) (def b 8) (sum a b)", "78"),
+        (
+            (
+                "(def a 1) "
+                "(def b a) "
+                "(def a (sum 1 a)) "
+                "(if (and (eq a 2) (eq b 1)) 1 0)"
+            ),
+            "1",
+        ),
+        ("(if (eq 1 0) (if (eq 1 1) 0 0) (if (eq 1 0) 0 1))", "1"),
     ],
 )
 def test_evaluate(src: str, res: str) -> None:

@@ -38,7 +38,7 @@ from sleepy.tafka.representation import (
 )
 from sleepy.tafka.representation import Conditional as TafConditional
 from sleepy.tafka.representation import Kind as TafKind
-from sleepy.tafka.representation.rvalue import Invokation
+from sleepy.tafka.representation.rvalue import And, Invokation
 
 UniqueNameSequence = Generator[str, None, None]
 
@@ -135,8 +135,10 @@ class TafkaEmitVisitor(Visitor[None]):
                 self.emit_intermidiate(Eq(args[0], args[1]))
             case "lt":
                 self.emit_intermidiate(Lt(args[0], args[1]))
+            case "and":
+                self.emit_intermidiate(And(args[0], args[1]))
             case _:
-                raise RuntimeError(str(intrinsic))
+                raise NotImplementedError(str(intrinsic))
 
     def visit_application_variable(
         self,

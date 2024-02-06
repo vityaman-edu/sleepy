@@ -8,6 +8,7 @@ from .data import IntegerData
 from .instruction import (
     Addi,
     Addim,
+    Andb,
     Brn,
     Divi,
     Instruction,
@@ -152,6 +153,12 @@ class AsmikEmiter:
                 lhsr = self.reg_var(lhs)
                 rhsr = self.reg_var(rhs)
                 self.emit_i(Slti(dst, lhsr, rhsr))
+            case tafka.And(lhs, rhs):
+                lhsr = self.reg_var(lhs)
+                rhsr = self.reg_var(rhs)
+                self.emit_i(Andb(dst, lhsr, rhsr))
+            case _:
+                raise NotImplementedError(str(source))
 
     def emit_invokation(
         self,

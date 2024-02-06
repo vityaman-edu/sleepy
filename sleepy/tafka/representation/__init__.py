@@ -12,6 +12,7 @@ from .block import (
 from .kind import Int, Kind, Signature
 from .node import Node
 from .rvalue import (
+    And,
     BinaryOperator,
     Copy,
     Div,
