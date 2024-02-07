@@ -161,6 +161,10 @@ class AsmikEmiter:
                 lhsr = self.reg_var(lhs)
                 rhsr = self.reg_var(rhs)
                 self.emit_i(Andb(dst, lhsr, rhsr))
+            case tafka.Or(lhs, rhs):
+                lhsr = self.reg_var(lhs)
+                rhsr = self.reg_var(rhs)
+                self.emit_i(Orb(dst, lhsr, rhsr))
             case _:
                 raise NotImplementedError(str(source))
 
@@ -176,9 +180,8 @@ class AsmikEmiter:
         prev_ra = self.reg_tmp()
         self.emit_i(mov(prev_ra, Reg.ra()))
 
-        self.emit_i(Addim(Reg.ra(), Reg.ip(), Integer(4)))
-
         proc_reg = self.reg_var(source.closure)
+        self.emit_i(Addim(Reg.ra(), Reg.ip(), Integer(4)))
         self.emit_i(Brn(Reg.ze(), proc_reg))
 
         res_reg = self.reg_var(target)

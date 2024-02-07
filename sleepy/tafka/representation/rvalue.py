@@ -203,3 +203,15 @@ class And(BinaryOperator):
     @property
     def value(self) -> Kind:
         return Bool()
+
+@dataclass(repr=False)
+class Or(BinaryOperator):
+    @override
+    @property
+    def name(self) -> str:
+        return "or"
+
+    @override
+    @property
+    def value(self) -> Kind:
+        return Bool()
