@@ -2,7 +2,9 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from sleepy.syntax import ParsingError, parse_program
+from sleepy.syntax import ParsingError
+
+from .parse import parse_program
 
 
 @pytest.mark.parametrize(

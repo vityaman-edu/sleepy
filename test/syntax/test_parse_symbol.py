@@ -3,7 +3,9 @@ import string
 import pytest
 from hypothesis import given, strategies
 
-from sleepy.syntax import ParsingError, parse_program
+from sleepy.syntax import ParsingError
+
+from .parse import parse_program
 
 
 @pytest.mark.parametrize(

@@ -1,6 +1,6 @@
 import pytest
 
-from sleepy.syntax import ParsingError, Program, parse_program
+from sleepy.syntax import ParsingError, Program
 from sleepy.syntax.binding import (
     define,
     func,
@@ -10,6 +10,8 @@ from sleepy.syntax.binding import (
     program,
     symbol,
 )
+
+from .parse import parse_program
 
 
 @pytest.mark.parametrize(

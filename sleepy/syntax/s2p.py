@@ -18,15 +18,15 @@ from sleepy.program import (
 from sleepy.program.builtin import BuiltinLayer
 from sleepy.program.unit import ProgramUnit
 
-from .lark import Application as ApplicationAST
-from .lark import IfExpression as IfExpressionAST
-from .lark import Kind as KindAST
-from .lark import Lambda as LambdaAST
-from .lark import Program as ProgramAST
-from .lark import Symbol as SymbolAST
-from .lark import VariableDefinition as VariableDefinitionAST
-from .lark import _Expression as ExpressionAST
-from .lark import _Integer as IntegerAST
+from .tree import Application as ApplicationAST
+from .tree import IfExpression as IfExpressionAST
+from .tree import Kind as KindAST
+from .tree import Lambda as LambdaAST
+from .tree import Program as ProgramAST
+from .tree import Symbol as SymbolAST
+from .tree import VariableDefinition as VariableDefinitionAST
+from .tree import _Expression as ExpressionAST
+from .tree import _Integer as IntegerAST
 from .visitor import Visitor
 
 
@@ -62,10 +62,7 @@ class Syntax2Program(Visitor[ProgramNode]):
             invokable=self.visit_expression(
                 tree.invokable.expression,
             ),
-            args=[
-                self.visit_expression(arg)
-                for arg in tree.args.expressions
-            ],
+            args=[self.visit_expression(arg) for arg in tree.args.expressions],
         )
 
     @override

@@ -1,5 +1,8 @@
 from .exception import ParsingError
-from .lark import (
+from .lark import LarkParser
+from .parser import SleepyParser
+from .s2p import Syntax2Program
+from .tree import (
     Application,
     Args,
     Body,
@@ -16,10 +19,8 @@ from .lark import (
     Symbol,
     ThenBranch,
     VariableDefinition,
-    parse_program,
 )
-from .lark import _Atomic as Atomic
-from .lark import _Expression as Expression
-from .lark import _Integer as Integer
-from .lark import _SyntaxTree as SyntaxTree
-from .s2p import Syntax2Program
+from .tree import _Atomic as Atomic
+from .tree import _Expression as Expression
+from .tree import _Integer as Integer
+from .tree import _SyntaxTree as SyntaxTree
