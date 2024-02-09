@@ -1,27 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import override
 
-from sleepy.core import SleepyError
-
+from .exception import DefinitionError, NameNotFoundError
 from .representation import Symbol
-
-
-class NamespaceError(SleepyError):
-    pass
-
-
-class DefinitionError(NamespaceError):
-    def __init__(self, name: str, reason: str) -> None:
-        self.name = name
-        super().__init__(f"Failed to define a name {name}: {reason}")
-
-
-class NameNotFoundError(NamespaceError):
-    def __init__(self, name: str) -> None:
-        self.name = name
-        super().__init__(
-            f"Failed to resolve a name {name}: not found",
-        )
 
 
 class Namespace(ABC):

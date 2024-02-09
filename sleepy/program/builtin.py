@@ -98,7 +98,5 @@ class BuiltinLayer:
         self.namespace = LocalNamespace()
         self.bindings = BasicBindings()
         for intrinsic in intrinsics:
-            self.bindings.bind(
-                self.namespace.define(intrinsic.name),
-                intrinsic,
-            )
+            defined = self.namespace.define(intrinsic.name)
+            self.bindings.bind(defined, intrinsic)

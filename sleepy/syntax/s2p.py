@@ -55,9 +55,7 @@ class S2PVisitor(Visitor[ProgramNode]):
     @override
     def visit_application(self, tree: ApplicationAST) -> ProgramNode:
         return Application(
-            invokable=self.visit_expression(
-                tree.invokable.expression,
-            ),
+            invokable=self.visit_expression(tree.invokable.expression),
             args=[self.visit_expression(arg) for arg in tree.args.expressions],
         )
 
@@ -81,10 +79,7 @@ class S2PVisitor(Visitor[ProgramNode]):
             self.bindings.bind(parameter.name, parameter)
 
         closure = Closure(parameters, statements=[])
-        self.bindings.bind(
-            self.namespace.define(Symbol("self")),
-            closure,
-        )
+        self.bindings.bind(self.namespace.define(Symbol("self")), closure)
 
         closure.statements = [
             self.visit_expression(expression)
@@ -103,7 +98,8 @@ class S2PVisitor(Visitor[ProgramNode]):
         match tree.name.name:
             case "int":
                 return Kind("int")
-        raise NotImplementedError
+            case _:
+                raise NotImplementedError
 
     @override
     def visit_integer(self, tree: IntegerAST) -> Integer:

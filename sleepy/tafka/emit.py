@@ -1,5 +1,5 @@
 from collections.abc import Generator
-from typing import override
+from typing import TYPE_CHECKING, override
 
 from sleepy.program import (
     Application,
@@ -11,7 +11,6 @@ from sleepy.program import (
     Kind,
     Program,
     Symbol,
-    SymbolId,
     Visitor,
 )
 from sleepy.program.unit import ProgramUnit
@@ -40,6 +39,9 @@ from sleepy.tafka.representation import Conditional as TafConditional
 from sleepy.tafka.representation import Kind as TafKind
 from sleepy.tafka.representation.rvalue import And, Invokation, Or
 
+if TYPE_CHECKING:
+    from sleepy.core import UID
+
 UniqueNameSequence = Generator[str, None, None]
 
 
@@ -52,7 +54,7 @@ class TafkaEmitVisitor(Visitor[None]):
         self.var_names = map(str, range(10000000))
         self.lbl_names = map(str, range(10000000))
 
-        self.vars: dict[SymbolId, Var] = {}
+        self.vars: dict[UID, Var] = {}
         self.procedures: list[Procedure] = []
 
         self.current_block = self.main
