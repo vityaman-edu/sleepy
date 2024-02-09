@@ -2,12 +2,22 @@ import sys
 from abc import ABC
 from dataclasses import dataclass, field
 
-from lark import Lark, Token, Transformer, v_args
+from lark import (
+    Lark,
+    Token,
+    Transformer,
+    UnexpectedCharacters,
+    UnexpectedEOF,
+    UnexpectedInput,
+    UnexpectedToken,
+    v_args,
+)
 from lark.ast_utils import AsList, Ast, WithMeta, create_transformer
-from lark.exceptions import LexError, ParseError
 from lark.tree import Meta
 
-from .exception import SleepySyntaxError
+from sleepy.core import SourceLocation
+
+from .exception import ParsingError
 
 PythonRepr = int | str | tuple
 
@@ -68,9 +78,7 @@ class _Integer(_Atomic, WithMeta):
         return self.value
 
     def is_same_as(self, other: "_SyntaxTree") -> bool:
-        return (
-            isinstance(other, _Integer) and self.value == other.value
-        )
+        return isinstance(other, _Integer) and self.value == other.value
 
 
 @dataclass
@@ -355,11 +363,21 @@ transformer = create_transformer(
 
 
 def parse_program(text: str) -> Program:
+    def location(e: UnexpectedInput) -> SourceLocation:
+        return SourceLocation(e.line, e.column)
+
     try:
         tree = parser.parse(text)
-    except ParseError as e:
-        raise SleepySyntaxError(e) from e
-    except LexError as e:
-        raise SleepySyntaxError(e) from e
-
-    return transformer.transform(tree)
+        return transformer.transform(tree)
+    except UnexpectedCharacters as e:
+        message = f"found character {e.char!r}, expected {e.allowed!r}"
+        raise ParsingError(message, location(e)) from e
+    except UnexpectedEOF as e:
+        message = f"found token <EOF>, expected {e.expected!r}"
+        raise ParsingError(message, location(e)) from e
+    except UnexpectedToken as e:
+        rules = e.considered_rules
+        message = f"found token {e.token!r}, expected {e.accepts!r}" + (
+            f" considering {rules!r}" if rules is not None else ""
+        )
+        raise ParsingError(message, location(e)) from e

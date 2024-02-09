@@ -1,0 +1,2 @@
+class SleepyError(Exception):
+    pass

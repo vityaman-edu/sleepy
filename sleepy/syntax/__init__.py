@@ -1,4 +1,4 @@
-from .exception import SleepySyntaxError
+from .exception import ParsingError
 from .lark import (
     Application,
     Args,

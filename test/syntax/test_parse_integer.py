@@ -2,7 +2,7 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from sleepy.syntax import SleepySyntaxError, parse_program
+from sleepy.syntax import ParsingError, parse_program
 
 
 @pytest.mark.parametrize(
@@ -25,7 +25,7 @@ def test_integer_positive(source: str, output: int) -> None:
     ["++0", "--0", "-", "+", "", "2121.0", "21321.5"],
 )
 def test_integer_failure(source: str) -> None:
-    with pytest.raises(SleepySyntaxError):
+    with pytest.raises(ParsingError):
         parse_program(source)
 
 

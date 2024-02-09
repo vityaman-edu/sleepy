@@ -3,7 +3,7 @@ import string
 import pytest
 from hypothesis import given, strategies
 
-from sleepy.syntax import SleepySyntaxError, parse_program
+from sleepy.syntax import ParsingError, parse_program
 
 
 @pytest.mark.parametrize(
@@ -19,7 +19,7 @@ def test_string_positive(source: str) -> None:
     ['"', 'forgot left"', '"forgot right', "\n"],
 )
 def test_string_negative(source: str) -> None:
-    with pytest.raises(SleepySyntaxError):
+    with pytest.raises(ParsingError):
         parse_program(source)
 
 

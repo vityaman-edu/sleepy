@@ -27,7 +27,7 @@ requires = ["poetry"]
 build-backend = "poetry.masonry.api"
 
 [tool.ruff]
-line-length = 70
+line-length = 80
 indent-width = 4
 target-version = "py312"
 
