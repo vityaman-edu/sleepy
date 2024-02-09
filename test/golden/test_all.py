@@ -7,7 +7,6 @@ from pytest_golden.plugin import (  # type: ignore  # noqa: PGH003
 
 from sleepy.asmik.emit import AsmikUnit, asmik_emit
 from sleepy.asmik.text import asmik_text
-from sleepy.tafka.text import tafka_text
 
 
 @pytest.mark.golden_test("group/*/*.yml")
@@ -18,7 +17,7 @@ def test_all(golden: GoldenTestFixture) -> None:
 
     actual_tafka = tafka_emit(given_sleepy_text)
 
-    actual_tafka_text = tafka_text(actual_tafka)[:-1]
+    actual_tafka_text = actual_tafka.to_text()[:-1]
     assert expected_tafka_text == actual_tafka_text
 
     expected_asmik_virt: str = golden.out["asmik-virt"]

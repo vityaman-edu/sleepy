@@ -1,5 +1,5 @@
 import sleepy.tafka.representation as tafka
-from sleepy.tafka.emit import TafkaUnit
+from sleepy.tafka import TafkaUnit
 
 from .argument import Immediate, Integer, Unassigned
 from .argument import PhysicalRegister as PhysReg

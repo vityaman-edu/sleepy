@@ -1,4 +1,3 @@
-from collections.abc import Generator
 from typing import TYPE_CHECKING, override
 
 from sleepy.program import (
@@ -41,8 +40,6 @@ from sleepy.tafka.representation.rvalue import And, Invokation, Or
 
 if TYPE_CHECKING:
     from sleepy.core import UID
-
-UniqueNameSequence = Generator[str, None, None]
 
 
 class TafkaEmitVisitor(Visitor[None]):
@@ -214,12 +211,3 @@ class TafkaEmitVisitor(Visitor[None]):
 
     def next_lbl(self) -> Label:
         return Label(next(self.lbl_names))
-
-    @staticmethod
-    def emitted_from(unit: ProgramUnit) -> "TafkaUnit":
-        tafka = TafkaEmitVisitor(unit)
-        tafka.visit_program(unit.program)
-        return tafka
-
-
-TafkaUnit = TafkaEmitVisitor
