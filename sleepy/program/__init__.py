@@ -23,4 +23,4 @@ from .representation import (
     Symbol,
 )
 from .unit import ProgramUnit
-from .visitor import Visitor
+from .visitor import ProgramVisitor

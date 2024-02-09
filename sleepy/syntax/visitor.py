@@ -16,7 +16,7 @@ from .tree import _Integer as Integer
 T = TypeVar("T")
 
 
-class Visitor(ABC, Generic[T]):
+class ASTVisitor(ABC, Generic[T]):
     @abstractmethod
     def visit_program(self, tree: Program) -> T:
         pass

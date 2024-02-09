@@ -4,18 +4,20 @@ sleepy: |-
   (qsum 1 2)
 
 tafka: |-
-  procedure 0(var(0): int, var(1): int) -> int
-  label(0):
-  var(2): int = mul(var(0): int, var(0): int): int
-  var(3): int = mul(var(1): int, var(1): int): int
-  var(4): int = sum(var(2): int, var(3): int): int
-  return var(4): int
-  label(main):
-  var(5): (int, int) -> int = load(const(0): (int, int) -> int): (int, int) -> int
-  var(6): int = load(const(1): int): int
-  var(7): int = load(const(2): int): int
-  var(8): int = invoke(var(5): (int, int) -> int)(var(6): int, var(7): int): int
-  return var(8): int
+  procedure @0(%0: int, %1: int) -> int {
+  0:
+    %2: int = mul %0: int, %0: int
+    %3: int = mul %1: int, %1: int
+    %4: int = sum %2: int, %3: int
+    return %4: int
+  }
+
+  main:
+    %5: (int, int) -> int = load $0: (int, int) -> int
+    %6: int = load $1: int
+    %7: int = load $2: int
+    %8: int = invoke @5 %6: int, %7: int
+    return %8: int
 
 asmik-virt: |-
   memory stack

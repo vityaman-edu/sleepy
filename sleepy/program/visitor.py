@@ -16,7 +16,7 @@ from .representation import (
 T = TypeVar("T")
 
 
-class Visitor(ABC, Generic[T]):
+class ProgramVisitor(ABC, Generic[T]):
     @abstractmethod
     def visit_program(self, tree: Program) -> T:
         pass

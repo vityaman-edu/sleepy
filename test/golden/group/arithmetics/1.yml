@@ -2,17 +2,17 @@ sleepy: |-
   (sum (div 5 2) (rem (sum 2 2) 2))
 
 tafka: |-
-  label(main):
-  var(0): int = load(const(5): int): int
-  var(1): int = load(const(2): int): int
-  var(2): int = div(var(0): int, var(1): int): int
-  var(3): int = load(const(2): int): int
-  var(4): int = load(const(2): int): int
-  var(5): int = sum(var(3): int, var(4): int): int
-  var(6): int = load(const(2): int): int
-  var(7): int = rem(var(5): int, var(6): int): int
-  var(8): int = sum(var(2): int, var(7): int): int
-  return var(8): int
+  main:
+    %0: int = load $5: int
+    %1: int = load $2: int
+    %2: int = div %0: int, %1: int
+    %3: int = load $2: int
+    %4: int = load $2: int
+    %5: int = sum %3: int, %4: int
+    %6: int = load $2: int
+    %7: int = rem %5: int, %6: int
+    %8: int = sum %2: int, %7: int
+    return %8: int
 
 asmik-virt: |-
   memory stack

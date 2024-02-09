@@ -23,7 +23,7 @@ class Intrinsic(RValue):
         raise NotImplementedError
 
 
-@dataclass(repr=False)
+@dataclass
 class Invokation(RValue):
     closure: Var
     args: list[Var]
@@ -33,16 +33,8 @@ class Invokation(RValue):
     def value(self) -> Kind:
         return cast(Signature, self.closure.kind).value
 
-    @override
-    def __repr__(self) -> str:
-        return (
-            f"invoke({self.closure})"
-            f"({', '.join(map(repr, self.args))}): "
-            f"{self.value}"
-        )
 
-
-@dataclass(repr=False)
+@dataclass
 class Load(Intrinsic):
     constant: Const
 
@@ -61,12 +53,8 @@ class Load(Intrinsic):
     def signature(self) -> Signature:
         return Signature([self.constant.kind], self.value)
 
-    @override
-    def __repr__(self) -> str:
-        return f"{self.name}({self.constant!r}): {self.value}"
 
-
-@dataclass(repr=False)
+@dataclass
 class UnaryOperator(Intrinsic):
     argument: Var
 
@@ -80,7 +68,7 @@ class UnaryOperator(Intrinsic):
         return f"{self.name}({self.argument!r}): {self.value}"
 
 
-@dataclass(repr=False)
+@dataclass
 class BinaryOperator(Intrinsic):
     left: Var
     right: Var
@@ -93,15 +81,8 @@ class BinaryOperator(Intrinsic):
             self.value,
         )
 
-    @override
-    def __repr__(self) -> str:
-        return (
-            f"{self.name}({self.left!r}, {self.right!r}): "
-            f"{self.value}"
-        )
 
-
-@dataclass(repr=False)
+@dataclass
 class Copy(UnaryOperator):
     @override
     @property
@@ -114,7 +95,7 @@ class Copy(UnaryOperator):
         return self.argument.kind
 
 
-@dataclass(repr=False)
+@dataclass
 class Sum(BinaryOperator):
     @override
     @property
@@ -127,7 +108,7 @@ class Sum(BinaryOperator):
         return self.left.kind
 
 
-@dataclass(repr=False)
+@dataclass
 class Mul(BinaryOperator):
     @override
     @property
@@ -140,7 +121,7 @@ class Mul(BinaryOperator):
         return self.left.kind
 
 
-@dataclass(repr=False)
+@dataclass
 class Div(BinaryOperator):
     @override
     @property
@@ -153,7 +134,7 @@ class Div(BinaryOperator):
         return self.left.kind
 
 
-@dataclass(repr=False)
+@dataclass
 class Rem(BinaryOperator):
     @override
     @property
@@ -166,7 +147,7 @@ class Rem(BinaryOperator):
         return self.left.kind
 
 
-@dataclass(repr=False)
+@dataclass
 class Eq(BinaryOperator):
     @override
     @property
@@ -179,7 +160,7 @@ class Eq(BinaryOperator):
         return Bool()
 
 
-@dataclass(repr=False)
+@dataclass
 class Lt(BinaryOperator):
     @override
     @property
@@ -192,7 +173,7 @@ class Lt(BinaryOperator):
         return Bool()
 
 
-@dataclass(repr=False)
+@dataclass
 class And(BinaryOperator):
     @override
     @property
@@ -204,7 +185,8 @@ class And(BinaryOperator):
     def value(self) -> Kind:
         return Bool()
 
-@dataclass(repr=False)
+
+@dataclass
 class Or(BinaryOperator):
     @override
     @property

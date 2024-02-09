@@ -3,14 +3,16 @@ sleepy: |-
   (id 5)
 
 tafka: |-
-  procedure 0(var(0): int) -> int
-  label(0):
-  return var(0): int
-  label(main):
-  var(1): (int) -> int = load(const(0): (int) -> int): (int) -> int
-  var(2): int = load(const(5): int): int
-  var(3): int = invoke(var(1): (int) -> int)(var(2): int): int
-  return var(3): int
+  procedure @0(%0: int) -> int {
+  0:
+    return %0: int
+  }
+
+  main:
+    %1: (int) -> int = load $0: (int) -> int
+    %2: int = load $5: int
+    %3: int = invoke @1 %2: int
+    return %3: int
 
 asmik-virt: |-
   memory stack

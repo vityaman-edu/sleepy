@@ -3,44 +3,48 @@ sleepy: |-
     (if (eq (sum 2 3) 5) 
       1 
       (rem 2 2)) 
-    (if (lt 2 3) 
+    (if (or (lt 2 3) (eq 1 1))
       (mul 1 1) 
       0))
 
 tafka: |-
-  label(main):
-  var(0): int = load(const(2): int): int
-  var(1): int = load(const(3): int): int
-  var(2): int = sum(var(0): int, var(1): int): int
-  var(3): int = load(const(5): int): int
-  var(4): bool = eq(var(2): int, var(3): int): bool
-  if var(4): bool then label(0) else label(1) end label(2)
-  label(0):
-  var(5): int = load(const(1): int): int
-  goto label(2)
-  label(1):
-  var(6): int = load(const(2): int): int
-  var(7): int = load(const(2): int): int
-  var(8): int = rem(var(6): int, var(7): int): int
-  var(5): int = copy(var(8): int): int
-  goto label(2)
-  label(2):
-  var(9): int = load(const(2): int): int
-  var(10): int = load(const(3): int): int
-  var(11): bool = lt(var(9): int, var(10): int): bool
-  if var(11): bool then label(3) else label(4) end label(5)
-  label(3):
-  var(12): int = load(const(1): int): int
-  var(13): int = load(const(1): int): int
-  var(14): int = mul(var(12): int, var(13): int): int
-  goto label(5)
-  label(4):
-  var(15): int = load(const(0): int): int
-  var(14): int = copy(var(15): int): int
-  goto label(5)
-  label(5):
-  var(16): int = sum(var(5): int, var(14): int): int
-  return var(16): int
+  main:
+    %0: int = load $2: int
+    %1: int = load $3: int
+    %2: int = sum %0: int, %1: int
+    %3: int = load $5: int
+    %4: bool = eq %2: int, %3: int
+    if %4: bool then 0 else 1 next 2
+  0:
+    %5: int = load $1: int
+    goto 2
+  1:
+    %6: int = load $2: int
+    %7: int = load $2: int
+    %8: int = rem %6: int, %7: int
+    %5: int = copy %8: int
+    goto 2
+  2:
+    %9: int = load $2: int
+    %10: int = load $3: int
+    %11: bool = lt %9: int, %10: int
+    %12: int = load $1: int
+    %13: int = load $1: int
+    %14: bool = eq %12: int, %13: int
+    %15: bool = or %11: bool, %14: bool
+    if %15: bool then 3 else 4 next 5
+  3:
+    %16: int = load $1: int
+    %17: int = load $1: int
+    %18: int = mul %16: int, %17: int
+    goto 5
+  4:
+    %19: int = load $0: int
+    %18: int = copy %19: int
+    goto 5
+  5:
+    %20: int = sum %5: int, %18: int
+    return %20: int
 
 asmik-virt: |-
   memory stack
@@ -81,20 +85,30 @@ asmik-virt: |-
   0112: addim v15, ze, 8
   0116: load v15, v15
   0120: slti v16, v14, v15
-  0124: addim v17, ze, 160
-  0128: brn v16, v17
+  0124: addim v17, ze, 24
+  0128: load v17, v17
   0132: addim v18, ze, 24
   0136: load v18, v18
-  0140: addim v19, ze, 24
-  0144: load v19, v19
-  0148: muli v20, v18, v19
-  0152: addim v21, ze, 180
-  0156: brn ze, v21
-  0160: addim v22, ze, 32
-  0164: load v22, v22
-  0168: addim v20, v22, 0
-  0172: addim v23, ze, 180
-  0176: brn ze, v23
-  0180: addi v24, v8, v20
-  0184: addim a1, v24, 0
-  0188: brn ze, ra
+  0140: slti v19, v17, v18
+  0144: slti v20, v18, v17
+  0148: orb v19, v19, v20
+  0152: addim v21, ze, 18446744073709551615
+  0156: xorb v19, v19, v21
+  0160: orb v22, v16, v19
+  0164: addim v23, ze, 200
+  0168: brn v22, v23
+  0172: addim v24, ze, 24
+  0176: load v24, v24
+  0180: addim v25, ze, 24
+  0184: load v25, v25
+  0188: muli v26, v24, v25
+  0192: addim v27, ze, 220
+  0196: brn ze, v27
+  0200: addim v28, ze, 32
+  0204: load v28, v28
+  0208: addim v26, v28, 0
+  0212: addim v29, ze, 220
+  0216: brn ze, v29
+  0220: addi v30, v8, v26
+  0224: addim a1, v30, 0
+  0228: brn ze, ra

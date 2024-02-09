@@ -27,10 +27,10 @@ from .tree import Symbol as SymbolAST
 from .tree import VariableDefinition as VariableDefinitionAST
 from .tree import _Expression as ExpressionAST
 from .tree import _Integer as IntegerAST
-from .visitor import Visitor
+from .visitor import ASTVisitor
 
 
-class S2PVisitor(Visitor[ProgramNode]):
+class S2PVisitor(ASTVisitor[ProgramNode]):
     def __init__(self, namespace: Namespace, bindings: Bindings) -> None:
         self.namespace = namespace
         self.bindings = bindings

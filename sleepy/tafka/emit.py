@@ -9,8 +9,8 @@ from sleepy.program import (
     Intrinsic,
     Kind,
     Program,
+    ProgramVisitor,
     Symbol,
-    Visitor,
 )
 from sleepy.program.unit import ProgramUnit
 from sleepy.tafka.representation import (
@@ -42,7 +42,7 @@ if TYPE_CHECKING:
     from sleepy.core import UID
 
 
-class TafkaEmitVisitor(Visitor[None]):
+class TafkaEmitVisitor(ProgramVisitor[None]):
     def __init__(self, unit: ProgramUnit) -> None:
         self.unit = unit
 

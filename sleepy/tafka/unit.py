@@ -3,7 +3,9 @@ from dataclasses import dataclass
 from sleepy.program import ProgramUnit
 
 from .emit import TafkaEmitVisitor
-from .representation import Block, Conditional, Goto, Procedure, Return
+from .representation import Block, Procedure
+from .text import TafkaTextListener
+from .walker import TafkaWalker
 
 
 @dataclass
@@ -18,27 +20,12 @@ class TafkaUnit:
         return TafkaUnit(tafka.main, tafka.procedures)
 
     def to_text(self) -> str:
-        def block_text(block: Block, until: Block | None = None) -> str:
-            if until is not None and block.label == until.label:
-                return ""
-            match block.last:
-                case Goto(next):
-                    return f"{block!r}\n{block_text(next, until)}"
-                case Conditional(_, then_branch, else_branch, next):
-                    return (
-                        f"{block!r}\n"
-                        f"{block_text(then_branch, until=next)}"
-                        f"{block_text(else_branch, until=next)}"
-                        f"{block_text(next, until)}"
-                    )
-                case Return():
-                    return f"{block!r}\n"
-                case _:
-                    raise NotImplementedError
+        out = TafkaTextListener()
+        walker = TafkaWalker(out)
 
-        text = ""
         for procedure in self.procedures:
-            text += repr(procedure) + "\n"
-            text += block_text(procedure.entry)
-        text += block_text(self.main)
-        return text
+            walker.explore_procedure(procedure)
+            out.writeln("")
+        walker.explore_block(self.main)
+
+        return out.text.getvalue()
