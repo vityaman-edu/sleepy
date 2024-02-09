@@ -6,7 +6,13 @@ from sleepy.tafka import TafkaUnit
 
 def main() -> None:
     source = """
-        (if (eq 1 1) 999 666)
+        (def id (lambda (n int) n))
+        (def a (id 1))
+        (def b (id 11))
+        (def c (id 111))
+        (if (and (eq a 1)
+            (and (eq b 11)
+                 (eq c 111))) 1 0)
     """
 
     syntax = parse_program(source)

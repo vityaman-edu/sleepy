@@ -6,16 +6,42 @@ sleepy: |-
 tafka: |-
   procedure 0(var(0): int, var(1): int) -> int
   label(0):
-    var(2): int = mul(var(0): int, var(0): int): int
-    var(3): int = mul(var(1): int, var(1): int): int
-    var(4): int = sum(var(2): int, var(3): int): int
-    return var(4): int
-
+  var(2): int = mul(var(0): int, var(0): int): int
+  var(3): int = mul(var(1): int, var(1): int): int
+  var(4): int = sum(var(2): int, var(3): int): int
+  return var(4): int
   label(main):
-    var(5): (int, int) -> int = load(const(0): (int, int) -> int): (int, int) -> int
-    var(6): int = load(const(1): int): int
-    var(7): int = load(const(2): int): int
-    var(8): int = invoke(var(5): (int, int) -> int)(var(6): int, var(7): int): int
-    return var(8): int
+  var(5): (int, int) -> int = load(const(0): (int, int) -> int): (int, int) -> int
+  var(6): int = load(const(1): int): int
+  var(7): int = load(const(2): int): int
+  var(8): int = invoke(var(5): (int, int) -> int)(var(6): int, var(7): int): int
+  return var(8): int
 
-asmik-virt: TODO
+asmik-virt: |-
+  memory stack
+  0000: 1
+  0008: 2
+  0016: 60
+  memory instr
+  0000: addim v0, ze, 16
+  0004: load v0, v0
+  0008: addim v1, ze, 0
+  0012: load v1, v1
+  0016: addim v2, ze, 8
+  0020: load v2, v2
+  0024: addim a1, v1, 0
+  0028: addim a2, v2, 0
+  0032: addim v3, ra, 0
+  0036: addim ra, ip, 4
+  0040: brn ze, v0
+  0044: addim v4, a1, 0
+  0048: addim ra, v3, 0
+  0052: addim a1, v4, 0
+  0056: brn ze, ra
+  0060: addim v5, a1, 0
+  0064: addim v6, a2, 0
+  0068: muli v7, v5, v5
+  0072: muli v8, v6, v6
+  0076: addi v9, v7, v8
+  0080: addim a1, v9, 0
+  0084: brn ze, ra

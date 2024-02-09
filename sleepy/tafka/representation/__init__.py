@@ -22,6 +22,7 @@ from .rvalue import (
     Load,
     Lt,
     Mul,
+    Or,
     Rem,
     RValue,
     Sum,

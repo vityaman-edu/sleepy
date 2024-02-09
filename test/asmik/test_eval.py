@@ -23,15 +23,37 @@ import pytest
         ("(def a 7) a", "7"),
         ("(def a 70) (def b 8) (sum a b)", "78"),
         (
-            (
-                "(def a 1) "
-                "(def b a) "
-                "(def a (sum 1 a)) "
-                "(if (and (eq a 2) (eq b 1)) 1 0)"
-            ),
+            """
+            (def a 1)
+            (def b a)
+            (def a (sum 1 a))
+            (if (and (eq a 2) (eq b 1)) 1 0)
+            """,
             "1",
         ),
         ("(if (eq 1 0) (if (eq 1 1) 0 0) (if (eq 1 0) 0 1))", "1"),
+        (
+            """
+            (def id (lambda (n int) n))
+            (def a (id 1))
+            (def b (id 11))
+            (def c (id 111))
+            (if (and (eq a 1)
+                (and (eq b 11)
+                     (eq c 111))) 1 0)
+            """,
+            "1",
+        ),
+        (
+            """
+            (def qsum (lambda (a int b int)
+                (sum (mul a a) (mul b b))))
+            (if (and (eq (qsum 1 2) 5)
+                (and (eq (qsum 2 2) 8)
+                     (eq (qsum 1 1) 2))) 1 0)
+            """,
+            "1",
+        ),
     ],
 )
 def test_evaluate(src: str, res: str) -> None:
