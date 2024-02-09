@@ -69,19 +69,20 @@ class AsmikEmitListener(TafkaWalker.Listener):
 
     @override
     def on_return(self, ret: tafka.Return) -> None:
-        self.emit_i(mov(Reg.a1(), self.reg_var(ret.value)))
+        retr = self.reg_var(ret.value)
+        self.emit_i(mov(Reg.a1(), retr))
         self.emit_i(Brn(Reg.ze(), Reg.ra()))
 
     @override
     def on_goto(self, goto: tafka.Goto) -> None:
+        block_label = repr(goto.block.label)
         label = self.reg_tmp()
-        self.emit_i(movi(label, Unassigned(repr(goto.block.label))))
+        self.emit_i(movi(label, Unassigned(block_label)))
         self.emit_i(Brn(Reg.ze(), label))
 
     @override
     def on_conditional(self, conditional: tafka.Conditional) -> None:
         else_label = repr(conditional.else_branch.label)
-
         condition = self.reg_var(conditional.condition)
         else_address = self.reg_tmp()
         self.emit_i(movi(else_address, Unassigned(else_label)))
@@ -124,39 +125,27 @@ class AsmikEmitListener(TafkaWalker.Listener):
 
     @override
     def on_sum(self, target: tafka.Var, source: tafka.Sum) -> None:
-        dst = self.reg_var(target)
-        lhsr = self.reg_var(source.left)
-        rhsr = self.reg_var(source.right)
-        self.emit_i(Addi(dst, lhsr, rhsr))
+        self.on_trivial_binary_operation(target, source)
 
     @override
     def on_mul(self, target: tafka.Var, source: tafka.Mul) -> None:
-        dst = self.reg_var(target)
-        lhsr = self.reg_var(source.left)
-        rhsr = self.reg_var(source.right)
-        self.emit_i(Muli(dst, lhsr, rhsr))
+        self.on_trivial_binary_operation(target, source)
 
     @override
     def on_div(self, target: tafka.Var, source: tafka.Div) -> None:
-        dst = self.reg_var(target)
-        lhsr = self.reg_var(source.left)
-        rhsr = self.reg_var(source.right)
-        self.emit_i(Divi(dst, lhsr, rhsr))
+        self.on_trivial_binary_operation(target, source)
 
     @override
     def on_rem(self, target: tafka.Var, source: tafka.Rem) -> None:
-        dst = self.reg_var(target)
-        lhsr = self.reg_var(source.left)
-        rhsr = self.reg_var(source.right)
-        self.emit_i(Remi(dst, lhsr, rhsr))
+        self.on_trivial_binary_operation(target, source)
 
     @override
     def on_eq(self, target: tafka.Var, source: tafka.Eq) -> None:
-        rdst = self.reg_var(target)
+        dstr = self.reg_var(target)
         lhsr = self.reg_var(source.left)
         rhsr = self.reg_var(source.right)
 
-        l2r = orb = rdst
+        l2r = orb = dstr
         r2l = self.reg_tmp()
         neg = self.reg_tmp()
 
@@ -164,28 +153,47 @@ class AsmikEmitListener(TafkaWalker.Listener):
         self.emit_i(Slti(r2l, rhsr, lhsr))
         self.emit_i(Orb(orb, l2r, r2l))
         self.emit_i(Addim(neg, Reg.ze(), Integer(2**64 - 1)))
-        self.emit_i(Xorb(rdst, orb, neg))
+        self.emit_i(Xorb(dstr, orb, neg))
 
     @override
     def on_lt(self, target: tafka.Var, source: tafka.Lt) -> None:
-        dst = self.reg_var(target)
-        lhsr = self.reg_var(source.left)
-        rhsr = self.reg_var(source.right)
-        self.emit_i(Slti(dst, lhsr, rhsr))
+        self.on_trivial_binary_operation(target, source)
 
     @override
     def on_and(self, target: tafka.Var, source: tafka.And) -> None:
-        dst = self.reg_var(target)
-        lhsr = self.reg_var(source.left)
-        rhsr = self.reg_var(source.right)
-        self.emit_i(Andb(dst, lhsr, rhsr))
+        self.on_trivial_binary_operation(target, source)
 
     @override
     def on_or(self, target: tafka.Var, source: tafka.Or) -> None:
-        dst = self.reg_var(target)
+        self.on_trivial_binary_operation(target, source)
+
+    def on_trivial_binary_operation(
+        self,
+        target: tafka.Var,
+        source: tafka.BinaryOperator,
+    ) -> None:
+        dstr = self.reg_var(target)
         lhsr = self.reg_var(source.left)
         rhsr = self.reg_var(source.right)
-        self.emit_i(Orb(dst, lhsr, rhsr))
+
+        instruction: Instruction
+        match source:
+            case tafka.Sum():
+                instruction = Addi(dstr, lhsr, rhsr)
+            case tafka.Mul():
+                instruction = Muli(dstr, lhsr, rhsr)
+            case tafka.Div():
+                instruction = Divi(dstr, lhsr, rhsr)
+            case tafka.Rem():
+                instruction = Remi(dstr, lhsr, rhsr)
+            case tafka.Lt():
+                instruction = Slti(dstr, lhsr, rhsr)
+            case tafka.And():
+                instruction = Andb(dstr, lhsr, rhsr)
+            case tafka.Or():
+                instruction = Orb(dstr, lhsr, rhsr)
+
+        self.emit_i(instruction)
 
     def emit_i(self, instr: Instruction) -> None:
         self.memory.instr.append(instr)
