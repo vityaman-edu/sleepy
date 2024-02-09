@@ -1,5 +1,7 @@
+from typing import override
+
 import sleepy.tafka.representation as tafka
-from sleepy.tafka import TafkaUnit
+from sleepy.tafka.walker import TafkaWalker
 
 from .argument import Immediate, Integer, Unassigned
 from .argument import PhysicalRegister as PhysReg
@@ -25,7 +27,7 @@ from .instruction import (
 from .memory import Memory
 
 
-class AsmikEmiter:
+class AsmikEmitListener(TafkaWalker.Listener):
     def __init__(self) -> None:
         self.virt_regs = (VirtReg(n) for n in range(10000))
         self.memory = Memory()
@@ -36,139 +38,57 @@ class AsmikEmiter:
         self.block: tafka.Block
         self.block_until: list[tafka.Block] = []
 
-    def emit_procedure(self, proc: tafka.Procedure) -> None:
+    @override
+    def enter_procedure(self, procedure: tafka.Procedure) -> None:
         addr = self.memory.data_put(IntegerData(self.next_instr_addr))
-        self.resolved[repr(proc.const)] = addr
-
-        for i, param in enumerate(proc.parameters):
+        self.resolved[repr(procedure.const)] = addr
+        for i, param in enumerate(procedure.parameters):
             param_reg = self.reg_var(param)
             self.emit_i(mov(param_reg, PhysReg.arg(i + 1)))
 
-        self.emit_block(proc.entry)
+    @override
+    def exit_procedure(self, procedure: tafka.Procedure) -> None:
+        pass
 
-    def emit_block(self, block: tafka.Block) -> None:
-        if (
-            len(self.block_until) > 0
-            and self.block_until[-1].label == block.label
-        ):
-            return
-
+    @override
+    def enter_block(self, block: tafka.Block) -> None:
         self.resolved[repr(block.label)] = self.next_instr_addr
-
         self.block = block
-        for statement in block.statements:
-            self.emit_stmt(statement)
 
-    def emit_stmt(self, stmt: tafka.Statement) -> None:
-        match stmt:
-            case tafka.Jump() as jump:
-                self.emit_jump(jump)
-            case tafka.Set() as set_stmt:
-                self.emit_set_stmt(set_stmt)
+    @override
+    def exit_block(self, block: tafka.Block) -> None:
+        pass
 
-    def emit_jump(self, jump: tafka.Jump) -> None:
-        match jump:
-            case tafka.Return() as ret:
-                self.emit_jump_return(ret)
-            case tafka.Goto() as goto:
-                self.emit_jump_goto(goto)
-            case tafka.Conditional() as cond:
-                self.emit_jump_cond(cond)
+    @override
+    def enter_statement(self, statement: tafka.Statement) -> None:
+        pass
 
-    def emit_jump_return(self, stmt: tafka.Return) -> None:
-        self.emit_i(mov(Reg.a1(), self.reg_var(stmt.value)))
+    @override
+    def exit_statement(self, statement: tafka.Statement) -> None:
+        pass
+
+    @override
+    def on_return(self, ret: tafka.Return) -> None:
+        self.emit_i(mov(Reg.a1(), self.reg_var(ret.value)))
         self.emit_i(Brn(Reg.ze(), Reg.ra()))
 
-    def emit_jump_goto(self, stmt: tafka.Goto) -> None:
+    @override
+    def on_goto(self, goto: tafka.Goto) -> None:
         label = self.reg_tmp()
-        label_val = Unassigned(repr(stmt.block.label))
-        self.emit_i(movi(label, label_val))
-
+        self.emit_i(movi(label, Unassigned(repr(goto.block.label))))
         self.emit_i(Brn(Reg.ze(), label))
 
-    def emit_jump_cond(self, conditional: tafka.Conditional) -> None:
-        self.block_until.append(conditional.next_block)
+    @override
+    def on_conditional(self, conditional: tafka.Conditional) -> None:
+        else_label = repr(conditional.else_branch.label)
 
-        cond = self.reg_var(conditional.condition)
+        condition = self.reg_var(conditional.condition)
+        else_address = self.reg_tmp()
+        self.emit_i(movi(else_address, Unassigned(else_label)))
+        self.emit_i(Brn(condition, else_address))
 
-        els = self.reg_tmp()
-        els_val = Unassigned(repr(conditional.else_branch.label))
-        self.emit_i(movi(els, els_val))
-
-        self.emit_i(Brn(cond, els))
-
-        self.emit_block(conditional.then_branch)
-        self.emit_block(conditional.else_branch)
-
-        self.block_until.pop()
-
-        self.emit_block(conditional.next_block)
-
-    def emit_set_stmt(self, stmt: tafka.Set) -> None:
-        match stmt.source:
-            case tafka.Intrinsic() as intrinsic:
-                self.emit_intrinsic(stmt.target, intrinsic)
-            case tafka.Invokation() as invokation:
-                self.emit_invokation(stmt.target, invokation)
-
-    def emit_intrinsic(
-        self,
-        target: tafka.Var,
-        source: tafka.Intrinsic,
-    ) -> None:
-        dst = self.reg_var(target)
-        match source:
-            case tafka.Load(cnst):
-                self.emit_i(Addim(dst, Reg.ze(), self.addr_of(cnst)))
-                self.emit_i(Load(dst, dst))
-            case tafka.Copy(var):
-                src = self.reg_var(var)
-                self.emit_i(mov(dst, src))
-            case tafka.Sum(lhs, rhs):
-                lhsr = self.reg_var(lhs)
-                rhsr = self.reg_var(rhs)
-                self.emit_i(Addi(dst, lhsr, rhsr))
-            case tafka.Mul(lhs, rhs):
-                lhsr = self.reg_var(lhs)
-                rhsr = self.reg_var(rhs)
-                self.emit_i(Muli(dst, lhsr, rhsr))
-            case tafka.Div(lhs, rhs):
-                lhsr = self.reg_var(lhs)
-                rhsr = self.reg_var(rhs)
-                self.emit_i(Divi(dst, lhsr, rhsr))
-            case tafka.Rem(lhs, rhs):
-                lhsr = self.reg_var(lhs)
-                rhsr = self.reg_var(rhs)
-                self.emit_i(Remi(dst, lhsr, rhsr))
-            case tafka.Eq(lhs, rhs):
-                lhsr = self.reg_var(lhs)
-                rhsr = self.reg_var(rhs)
-
-                l2r = orb = dst
-                r2l = self.reg_tmp()
-                neg = self.reg_tmp()
-
-                self.emit_i(Slti(l2r, lhsr, rhsr))
-                self.emit_i(Slti(r2l, rhsr, lhsr))
-                self.emit_i(Orb(orb, l2r, r2l))
-                self.emit_i(Addim(neg, Reg.ze(), Integer(2**64 - 1)))
-                self.emit_i(Xorb(dst, orb, neg))
-            case tafka.Lt(lhs, rhs):
-                lhsr = self.reg_var(lhs)
-                rhsr = self.reg_var(rhs)
-                self.emit_i(Slti(dst, lhsr, rhsr))
-            case tafka.And(lhs, rhs):
-                lhsr = self.reg_var(lhs)
-                rhsr = self.reg_var(rhs)
-                self.emit_i(Andb(dst, lhsr, rhsr))
-            case tafka.Or(lhs, rhs):
-                lhsr = self.reg_var(lhs)
-                rhsr = self.reg_var(rhs)
-                self.emit_i(Orb(dst, lhsr, rhsr))
-            case _:
-                raise NotImplementedError(str(source))
-
-    def emit_invokation(
+    @override
+    def on_invokation(
         self,
         target: tafka.Var,
         source: tafka.Invokation,
@@ -188,6 +108,84 @@ class AsmikEmiter:
         self.emit_i(mov(res_reg, Reg.a1()))
 
         self.emit_i(mov(Reg.ra(), prev_ra))
+
+    @override
+    def on_load(self, target: tafka.Var, source: tafka.Load) -> None:
+        dst = self.reg_var(target)
+        addr = self.addr_of(source.constant)
+        self.emit_i(Addim(dst, Reg.ze(), addr))
+        self.emit_i(Load(dst, dst))
+
+    @override
+    def on_copy(self, target: tafka.Var, source: tafka.Copy) -> None:
+        dst = self.reg_var(target)
+        src = self.reg_var(source.argument)
+        self.emit_i(mov(dst, src))
+
+    @override
+    def on_sum(self, target: tafka.Var, source: tafka.Sum) -> None:
+        dst = self.reg_var(target)
+        lhsr = self.reg_var(source.left)
+        rhsr = self.reg_var(source.right)
+        self.emit_i(Addi(dst, lhsr, rhsr))
+
+    @override
+    def on_mul(self, target: tafka.Var, source: tafka.Mul) -> None:
+        dst = self.reg_var(target)
+        lhsr = self.reg_var(source.left)
+        rhsr = self.reg_var(source.right)
+        self.emit_i(Muli(dst, lhsr, rhsr))
+
+    @override
+    def on_div(self, target: tafka.Var, source: tafka.Div) -> None:
+        dst = self.reg_var(target)
+        lhsr = self.reg_var(source.left)
+        rhsr = self.reg_var(source.right)
+        self.emit_i(Divi(dst, lhsr, rhsr))
+
+    @override
+    def on_rem(self, target: tafka.Var, source: tafka.Rem) -> None:
+        dst = self.reg_var(target)
+        lhsr = self.reg_var(source.left)
+        rhsr = self.reg_var(source.right)
+        self.emit_i(Remi(dst, lhsr, rhsr))
+
+    @override
+    def on_eq(self, target: tafka.Var, source: tafka.Eq) -> None:
+        rdst = self.reg_var(target)
+        lhsr = self.reg_var(source.left)
+        rhsr = self.reg_var(source.right)
+
+        l2r = orb = rdst
+        r2l = self.reg_tmp()
+        neg = self.reg_tmp()
+
+        self.emit_i(Slti(l2r, lhsr, rhsr))
+        self.emit_i(Slti(r2l, rhsr, lhsr))
+        self.emit_i(Orb(orb, l2r, r2l))
+        self.emit_i(Addim(neg, Reg.ze(), Integer(2**64 - 1)))
+        self.emit_i(Xorb(rdst, orb, neg))
+
+    @override
+    def on_lt(self, target: tafka.Var, source: tafka.Lt) -> None:
+        dst = self.reg_var(target)
+        lhsr = self.reg_var(source.left)
+        rhsr = self.reg_var(source.right)
+        self.emit_i(Slti(dst, lhsr, rhsr))
+
+    @override
+    def on_and(self, target: tafka.Var, source: tafka.And) -> None:
+        dst = self.reg_var(target)
+        lhsr = self.reg_var(source.left)
+        rhsr = self.reg_var(source.right)
+        self.emit_i(Andb(dst, lhsr, rhsr))
+
+    @override
+    def on_or(self, target: tafka.Var, source: tafka.Or) -> None:
+        dst = self.reg_var(target)
+        lhsr = self.reg_var(source.left)
+        rhsr = self.reg_var(source.right)
+        self.emit_i(Orb(dst, lhsr, rhsr))
 
     def emit_i(self, instr: Instruction) -> None:
         self.memory.instr.append(instr)
@@ -215,25 +213,3 @@ class AsmikEmiter:
     @property
     def next_instr_addr(self) -> int:
         return len(self.memory.instr) * 4
-
-
-AsmikUnit = AsmikEmiter
-
-
-def asmik_resolve(asmik: AsmikUnit) -> None:
-    for instr in asmik.memory.instr:
-        if (
-            isinstance(instr, Addim)  #
-            and isinstance(instr.rhs, Unassigned)
-        ):
-            label = instr.rhs.label
-            instr.rhs = Integer(asmik.resolved[label])
-
-
-def asmik_emit(tafka: TafkaUnit) -> AsmikUnit:
-    asmik = AsmikEmiter()
-    asmik.emit_block(tafka.main)
-    for proc in tafka.procedures:
-        asmik.emit_procedure(proc)
-    asmik_resolve(asmik)
-    return asmik

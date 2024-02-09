@@ -32,3 +32,4 @@ from .representation import (
     Var,
 )
 from .unit import TafkaUnit
+from .walker import TafkaWalker
