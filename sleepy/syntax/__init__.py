@@ -1,4 +1,4 @@
-from .exception import ParsingError
+from .error import ParsingError
 from .lark import LarkParser
 from .parser import SleepyParser
 from .s2p import to_program

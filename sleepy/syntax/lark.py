@@ -18,7 +18,7 @@ from sleepy.core import SourceLocation
 from sleepy.syntax.parser import SleepyParser
 from sleepy.syntax.tree import Program, _Atomic, _Expression, _Integer
 
-from .exception import ParsingError
+from .error import ParsingError
 
 
 class LarkToSyntaxTreeTransformer(Transformer):

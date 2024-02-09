@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import override
 
-from .exception import DefinitionError, NameNotFoundError
+from .error import DefinitionError, NameNotFoundError
 from .representation import Symbol
 
 
