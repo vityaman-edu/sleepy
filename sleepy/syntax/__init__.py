@@ -1,7 +1,7 @@
 from .exception import ParsingError
 from .lark import LarkParser
 from .parser import SleepyParser
-from .s2p import Syntax2Program
+from .s2p import to_program
 from .tree import (
     Application,
     Args,

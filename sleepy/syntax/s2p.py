@@ -30,12 +30,8 @@ from .tree import _Integer as IntegerAST
 from .visitor import Visitor
 
 
-class Syntax2Program(Visitor[ProgramNode]):
-    def __init__(
-        self,
-        namespace: Namespace,
-        bindings: Bindings,
-    ) -> None:
+class S2PVisitor(Visitor[ProgramNode]):
+    def __init__(self, namespace: Namespace, bindings: Bindings) -> None:
         self.namespace = namespace
         self.bindings = bindings
 
@@ -124,19 +120,16 @@ class Syntax2Program(Visitor[ProgramNode]):
         return Definition(symbol, expression)
 
     @override
-    def visit_expression(
-        self,
-        expression: ExpressionAST,
-    ) -> Expression:
+    def visit_expression(self, expression: ExpressionAST) -> Expression:
         return cast(Expression, super().visit_expression(expression))
 
-    @classmethod
-    def converted(cls, tree: ProgramAST) -> ProgramUnit:
-        builtin = BuiltinLayer()
-        s2p = Syntax2Program(builtin.namespace, builtin.bindings)
-        program = s2p.visit_program(tree)
-        return ProgramUnit(
-            program=program,
-            bindings=s2p.bindings,
-            root=builtin.namespace,
-        )
+
+def to_program(tree: ProgramAST) -> ProgramUnit:
+    builtin = BuiltinLayer()
+    s2p = S2PVisitor(builtin.namespace, builtin.bindings)
+    program = s2p.visit_program(tree)
+    return ProgramUnit(
+        program=program,
+        bindings=s2p.bindings,
+        root=builtin.namespace,
+    )
