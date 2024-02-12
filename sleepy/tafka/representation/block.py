@@ -60,7 +60,7 @@ class Procedure(Node):
     entry: Block
     parameters: list[Var]
     value: Kind
-    locals: set[Var] = field(default_factory=lambda: set(), init=False)
+    locals: list[Var] = field(default_factory=list, init=False)
 
     @property
     def signature(self) -> Signature:

@@ -198,7 +198,7 @@ class TafkaEmitVisitor(ProgramVisitor[None]):
 
     def next_var(self, kind: taf.Kind) -> taf.Var:
         var = taf.Var(next(self.var_names), kind)
-        self.current_procedure.locals.add(var)
+        self.current_procedure.locals.append(var)
         return var
 
     def next_lbl(self) -> taf.Label:
