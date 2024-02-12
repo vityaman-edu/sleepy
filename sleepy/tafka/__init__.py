@@ -33,4 +33,4 @@ from .representation import (
 )
 from .unit import TafkaUnit
 from .usage import Usages
-from .walker import TafkaWalker
+from .walker import Context, TafkaWalker

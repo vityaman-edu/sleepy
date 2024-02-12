@@ -35,6 +35,7 @@ class AsmikInterpreter:
         self.registers["ze"] = 0
         self.registers["ip"] = 0
         self.registers["ra"] = self.STOP
+        self.registers["sp"] = 10000
 
         self.running = False
 
@@ -62,6 +63,7 @@ class AsmikInterpreter:
                 self.running = False
 
     def execute(self, instr: Instruction) -> None:
+        print(f"exec {instr}")
         match instr:
             case Addi(dst, lhs, rhs):
                 self.write(dst, self.read(lhs) + self.read(rhs))
@@ -101,9 +103,7 @@ class AsmikInterpreter:
         return self.registers[repr(reg)]
 
     def write(self, reg: Register, value: int) -> None:
-        match reg:
-            case "ze":
-                message = "ze is readonly"
-                raise SleepyError(message)
-            case _:
-                self.registers[repr(reg)] = value
+        if reg == Register.ze():
+            message = "ze is readonly"
+            raise SleepyError(message)
+        self.registers[repr(reg)] = value

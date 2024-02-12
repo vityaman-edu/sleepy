@@ -18,21 +18,21 @@ class Kind(Node):
                 raise NotImplementedError
 
 
-@dataclass(repr=False)
+@dataclass(repr=False, unsafe_hash=True)
 class Unknown(Kind):
     @override
     def __repr__(self) -> str:
         return "?"
 
 
-@dataclass(repr=False)
+@dataclass(repr=False, unsafe_hash=True)
 class Int(Kind):
     @override
     def __repr__(self) -> str:
         return "int"
 
 
-@dataclass(repr=False)
+@dataclass(repr=False, unsafe_hash=True)
 class Bool(Kind):
     @override
     def __repr__(self) -> str:
@@ -43,6 +43,10 @@ class Bool(Kind):
 class Signature(Kind):
     params: list[Kind]
     value: Kind
+
+    @override
+    def __hash__(self) -> int:
+        return hash(str(self.params)) + hash(self.value)
 
     @override
     def __repr__(self) -> str:
