@@ -3,8 +3,7 @@ from typing import override
 import sleepy.tafka.representation as taf
 from sleepy import program
 from sleepy.core import MetaTable
-from sleepy.program import ProgramVisitor
-from sleepy.program.unit import ProgramUnit
+from sleepy.program import ProgramUnit, ProgramVisitor
 
 
 class TafkaEmitVisitor(ProgramVisitor[None]):
