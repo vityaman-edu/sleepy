@@ -6,6 +6,7 @@ from pytest_golden.plugin import (  # type: ignore  # noqa: PGH003
 )
 
 from sleepy.asmik import AsmikUnit
+from sleepy.tafka import Usages
 
 
 @pytest.mark.golden_test("group/*/*.yml")
@@ -18,6 +19,12 @@ def test_all(golden: GoldenTestFixture) -> None:
 
     actual_tafka_text = actual_tafka.to_text()[:-1]
     assert expected_tafka_text == actual_tafka_text
+
+    expected_tafka_usages: str = golden.out["tafka-usages"]
+    usages = Usages.analyzed(actual_tafka.main)
+    actual_tafka_usages = usages.to_text(actual_tafka.main)
+
+    assert expected_tafka_usages == actual_tafka_usages
 
     expected_asmik_virt: str = golden.out["asmik-virt"]
 

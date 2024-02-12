@@ -3,16 +3,23 @@ sleepy: |-
   (id 5)
 
 tafka: |-
-  procedure @0(%0: int) -> int {
-  0:
-    return %0: int
-  }
+  000. procedure @0(%0: int) -> int {
+  000. 0:
+  001.   return %0: int
+  001. }
+  001. 
+  001. main:
+  002.   %1: (int) -> int = load $0: (int) -> int
+  003.   %2: int = load $5: int
+  004.   %3: int = invoke @1 %2: int
+  005.   return %3: int
 
-  main:
-    %1: (int) -> int = load $0: (int) -> int
-    %2: int = load $5: int
-    %3: int = invoke @1 %2: int
-    return %3: int
+tafka-usages: |
+  001. %1: r3 w0
+  002. %2: r3 w0
+  003. %3: r4 w0, %1: r0 w0, %2: r0 w0
+  004. %3: r0 w0
+
 
 asmik-virt: |-
   memory stack

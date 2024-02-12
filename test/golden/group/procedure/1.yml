@@ -4,20 +4,28 @@ sleepy: |-
   (qsum 1 2)
 
 tafka: |-
-  procedure @0(%0: int, %1: int) -> int {
-  0:
-    %2: int = mul %0: int, %0: int
-    %3: int = mul %1: int, %1: int
-    %4: int = sum %2: int, %3: int
-    return %4: int
-  }
+  000. procedure @0(%0: int, %1: int) -> int {
+  000. 0:
+  001.   %2: int = mul %0: int, %0: int
+  002.   %3: int = mul %1: int, %1: int
+  003.   %4: int = sum %2: int, %3: int
+  004.   return %4: int
+  004. }
+  004. 
+  004. main:
+  005.   %5: (int, int) -> int = load $0: (int, int) -> int
+  006.   %6: int = load $1: int
+  007.   %7: int = load $2: int
+  008.   %8: int = invoke @5 %6: int, %7: int
+  009.   return %8: int
 
-  main:
-    %5: (int, int) -> int = load $0: (int, int) -> int
-    %6: int = load $1: int
-    %7: int = load $2: int
-    %8: int = invoke @5 %6: int, %7: int
-    return %8: int
+tafka-usages: |
+  001. %5: r4 w0
+  002. %6: r4 w0
+  003. %7: r4 w0
+  004. %8: r5 w0, %5: r0 w0, %6: r0 w0, %7: r0 w0
+  005. %8: r0 w0
+
 
 asmik-virt: |-
   memory stack

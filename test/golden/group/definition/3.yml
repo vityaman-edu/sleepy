@@ -6,21 +6,33 @@ sleepy: |-
   (eq b b)
 
 tafka: |-
-  main:
-    %0: int = load $1: int
-    %1: int = load $0: int
-    %2: bool = eq %0: int, %1: int
-    if %2: bool then 0 else 1 next 2
-  0:
-    %3: int = load $2: int
-    goto 2
-  1:
-    %4: int = load $3: int
-    %3: int = copy %4: int
-    goto 2
-  2:
-    %5: bool = eq %3: int, %3: int
-    return %5: bool
+  000. main:
+  001.   %0: int = load $1: int
+  002.   %1: int = load $0: int
+  003.   %2: bool = eq %0: int, %1: int
+  004.   if %2: bool then 0 else 1 next 2
+  004. 0:
+  005.   %3: int = load $2: int
+  006.   goto 2
+  006. 1:
+  007.   %4: int = load $3: int
+  008.   %3: int = copy %4: int
+  009.   goto 2
+  009. 2:
+  010.   %5: bool = eq %3: int, %3: int
+  011.   return %5: bool
+
+tafka-usages: |
+  001. %0: r3 w0
+  002. %1: r3 w0
+  003. %0: r0 w0, %1: r0 w0, %2: r4 w0
+  004. %2: r0 w0
+  005. %3: r10 w0
+  007. %4: r8 w0
+  008. %3: r10 w0, %4: r0 w0
+  010. %3: r0 w0, %3: r0 w0, %5: r11 w0
+  011. %5: r0 w0
+
 
 asmik-virt: |-
   memory stack

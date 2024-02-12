@@ -6,8 +6,9 @@ import sleepy.tafka.representation as taf
 from .walker import TafkaWalker
 
 
-class TafkaTextListener(TafkaWalker.Listener):
+class TafkaTextListener(TafkaWalker.ContextedListener):
     def __init__(self) -> None:
+        super().__init__()
         self.text = StringIO()
         self.indent = 0
 
@@ -15,7 +16,7 @@ class TafkaTextListener(TafkaWalker.Listener):
         self.text.write(text)
 
     def writeln(self, line: str) -> None:
-        self.write(f"{'  ' * self.indent}{line}\n")
+        self.write(f"{(self.position):03d}. {'  ' * self.indent}{line}\n")
 
     @override
     def enter_procedure(self, procedure: taf.Procedure) -> None:
@@ -37,10 +38,6 @@ class TafkaTextListener(TafkaWalker.Listener):
     @override
     def exit_block(self, block: taf.Block) -> None:
         self.indent -= 1
-
-    @override
-    def enter_statement(self, statement: taf.Statement) -> None:
-        pass
 
     @override
     def exit_statement(self, statement: taf.Statement) -> None:
