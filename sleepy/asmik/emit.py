@@ -55,7 +55,7 @@ class AsmikEmitListener(TafkaWalker.Listener):
         self.resolved[repr(procedure.const)] = addr
         for i, param in enumerate(procedure.parameters):
             register = self.registers.binded_to(param)
-            self.emit_i(mov(register, PhysReg.arg(i + 1)))
+            self.emit(mov(register, PhysReg.arg(i + 1)))
 
     @override
     def exit_procedure(self, procedure: tafka.Procedure) -> None:
@@ -80,23 +80,23 @@ class AsmikEmitListener(TafkaWalker.Listener):
     @override
     def on_return(self, ret: tafka.Return) -> None:
         retr = self.registers.binded_to(ret.value)
-        self.emit_i(mov(Reg.a1(), retr))
-        self.emit_i(Brn(Reg.ze(), Reg.ra()))
+        self.emit(mov(Reg.a1(), retr))
+        self.emit(Brn(Reg.ze(), Reg.ra()))
 
     @override
     def on_goto(self, goto: tafka.Goto) -> None:
         block_label = repr(goto.block.label)
         label = self.registers.temporary()
-        self.emit_i(movi(label, Unassigned(block_label)))
-        self.emit_i(Brn(Reg.ze(), label))
+        self.emit(movi(label, Unassigned(block_label)))
+        self.emit(Brn(Reg.ze(), label))
 
     @override
     def on_conditional(self, conditional: tafka.Conditional) -> None:
         else_label = repr(conditional.else_branch.label)
         condition = self.registers.binded_to(conditional.condition)
         else_address = self.registers.temporary()
-        self.emit_i(movi(else_address, Unassigned(else_label)))
-        self.emit_i(Brn(condition, else_address))
+        self.emit(movi(else_address, Unassigned(else_label)))
+        self.emit(Brn(condition, else_address))
 
     @override
     def on_invokation(
@@ -106,32 +106,32 @@ class AsmikEmitListener(TafkaWalker.Listener):
     ) -> None:
         for i, arg in enumerate(source.args):
             arg_reg = self.registers.binded_to(arg)
-            self.emit_i(mov(PhysReg.arg(i + 1), arg_reg))
+            self.emit(mov(PhysReg.arg(i + 1), arg_reg))
 
         prev_ra = self.registers.temporary()
-        self.emit_i(mov(prev_ra, Reg.ra()))
+        self.emit(mov(prev_ra, Reg.ra()))
 
         proc_reg = self.registers.binded_to(source.closure)
-        self.emit_i(Addim(Reg.ra(), Reg.ip(), Integer(4)))
-        self.emit_i(Brn(Reg.ze(), proc_reg))
+        self.emit(Addim(Reg.ra(), Reg.ip(), Integer(4)))
+        self.emit(Brn(Reg.ze(), proc_reg))
 
         res_reg = self.registers.binded_to(target)
-        self.emit_i(mov(res_reg, Reg.a1()))
+        self.emit(mov(res_reg, Reg.a1()))
 
-        self.emit_i(mov(Reg.ra(), prev_ra))
+        self.emit(mov(Reg.ra(), prev_ra))
 
     @override
     def on_load(self, target: tafka.Var, source: tafka.Load) -> None:
         dst = self.registers.binded_to(target)
         addr = self.addr_of(source.constant)
-        self.emit_i(Addim(dst, Reg.ze(), addr))
-        self.emit_i(Load(dst, dst))
+        self.emit(Addim(dst, Reg.ze(), addr))
+        self.emit(Load(dst, dst))
 
     @override
     def on_copy(self, target: tafka.Var, source: tafka.Copy) -> None:
         dst = self.registers.binded_to(target)
         src = self.registers.binded_to(source.argument)
-        self.emit_i(mov(dst, src))
+        self.emit(mov(dst, src))
 
     @override
     def on_sum(self, target: tafka.Var, source: tafka.Sum) -> None:
@@ -159,11 +159,11 @@ class AsmikEmitListener(TafkaWalker.Listener):
         r2l = self.registers.temporary()
         neg = self.registers.temporary()
 
-        self.emit_i(Slti(l2r, lhsr, rhsr))
-        self.emit_i(Slti(r2l, rhsr, lhsr))
-        self.emit_i(Orb(orb, l2r, r2l))
-        self.emit_i(Addim(neg, Reg.ze(), Integer(2**64 - 1)))
-        self.emit_i(Xorb(dstr, orb, neg))
+        self.emit(Slti(l2r, lhsr, rhsr))
+        self.emit(Slti(r2l, rhsr, lhsr))
+        self.emit(Orb(orb, l2r, r2l))
+        self.emit(Addim(neg, Reg.ze(), Integer(2**64 - 1)))
+        self.emit(Xorb(dstr, orb, neg))
 
     @override
     def on_lt(self, target: tafka.Var, source: tafka.Lt) -> None:
@@ -203,9 +203,9 @@ class AsmikEmitListener(TafkaWalker.Listener):
             case tafka.Or():
                 instruction = Orb(dstr, lhsr, rhsr)
 
-        self.emit_i(instruction)
+        self.emit(instruction)
 
-    def emit_i(self, instr: Instruction) -> None:
+    def emit(self, instr: Instruction) -> None:
         self.memory.instr.append(instr)
 
     def addr_of(self, cnst: tafka.Const) -> Immediate:
