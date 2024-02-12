@@ -57,11 +57,13 @@ class AsmikEmitListener(TafkaWalker.ContextedListener):
 
     @override
     def enter_procedure(self, procedure: taf.Procedure) -> None:
+        super().enter_procedure(procedure)
+
         self.usages = Usages.analyzed(procedure)
         self.procedure = procedure
 
         addr = self.memory.data_put(IntegerData(self.next_instr_addr))
-        self.resolved[repr(procedure.const)] = addr
+        self.resolved[f"${procedure.const.name}"] = addr
         for i, param in enumerate(procedure.parameters):
             register = self.registers.binded_to(param)
             self.emit(mov(register, PhysReg.arg(i + 1)))
@@ -108,28 +110,35 @@ class AsmikEmitListener(TafkaWalker.ContextedListener):
         self.emit(movi(else_address, Unassigned(else_label)))
         self.emit(Brn(condition, else_address))
 
+    def push_context(self, variables: list[taf.Var]) -> None:
+        def push(register: Reg) -> None:
+            self.emit(Stor(Reg.sp(), register))
+            self.emit(Addim(Reg.sp(), Reg.sp(), Integer(8)))
+
+        for local in variables:
+            if self.is_alive(local):
+                push(self.registers.binded_to(local))
+        push(Reg.ra())
+
+    def pop_context(self, variables: list[taf.Var]) -> None:
+        def pop(register: Reg) -> None:
+            self.emit(Addim(Reg.sp(), Reg.sp(), Integer(-8)))
+            self.emit(Load(register, Reg.sp()))
+
+        pop(Reg.ra())
+        for local in variables[::-1]:
+            if self.is_alive(local):
+                pop(self.registers.binded_to(local))
+
     @override
     def on_invokation(
         self,
         target: taf.Var,
         source: taf.Invokation,
     ) -> None:
-        def push(register: Reg) -> None:
-            print(f"push {register}")
-            self.emit(Stor(Reg.sp(), register))
-            self.emit(Addim(Reg.sp(), Reg.sp(), Integer(8)))
+        variables = list(self.procedure.locals)
 
-        def pop(register: Reg) -> None:
-            print(f"pop {register}")
-            self.emit(Addim(Reg.sp(), Reg.sp(), Integer(-8)))
-            self.emit(Load(register, Reg.sp()))
-
-        local_vars = list(self.procedure.locals)
-
-        for local in local_vars:
-            if self.is_alive(local):
-                push(self.registers.binded_to(local))
-        push(Reg.ra())
+        self.push_context(variables)
 
         for i, arg in enumerate(source.args):
             arg_reg = self.registers.binded_to(arg)
@@ -139,13 +148,10 @@ class AsmikEmitListener(TafkaWalker.ContextedListener):
         self.emit(Addim(Reg.ra(), Reg.ip(), Integer(4)))
         self.emit(Brn(Reg.ze(), proc_reg))
 
-        pop(Reg.ra())
-        for local in local_vars[::-1]:
-            if self.is_alive(local):
-                pop(self.registers.binded_to(local))
-
         result = self.registers.binded_to(target)
         self.emit(mov(result, Reg.a1()))
+
+        self.pop_context(variables)
 
     @override
     def on_load(self, target: taf.Var, source: taf.Load) -> None:
@@ -242,18 +248,19 @@ class AsmikEmitListener(TafkaWalker.ContextedListener):
                 addr = self.memory.data_put(data)
                 return Integer(addr)
             case taf.Signature():
-                return Unassigned(repr(cnst))
+                return Unassigned(f"${cnst.name}")
             case _:
                 raise NotImplementedError
 
     def is_alive(self, var: taf.Var) -> bool:
-        nxt = self.usages.next_read(var, self.context)
-        prv = self.usages.next_write(var, Context(-1, self.procedure.entry))
-        return (
-            nxt is not None  #
-            and prv is not None  #
-            and prv < self.position
-        )
+        read = self.usages.next_read(var, self.context)
+        write = self.usages.next_write(var, self.context)
+        init = self.usages.next_write(var, Context(-1, self.procedure.entry))
+
+        assert init is not None  # noqa: S101
+        if write is not None:
+            return read is not None and read <= write
+        return read is not None and init < self.position
 
     @property
     def next_instr_addr(self) -> int:

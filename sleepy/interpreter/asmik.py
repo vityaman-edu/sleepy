@@ -63,7 +63,6 @@ class AsmikInterpreter:
                 self.running = False
 
     def execute(self, instr: Instruction) -> None:
-        print(f"exec {instr}")
         match instr:
             case Addi(dst, lhs, rhs):
                 self.write(dst, self.read(lhs) + self.read(rhs))

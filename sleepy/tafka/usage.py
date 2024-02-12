@@ -114,7 +114,8 @@ class Usages:
 
         @override
         def enter_procedure(self, procedure: taf.Procedure) -> None:
-            pass
+            for argument in procedure.parameters:
+                self.write(argument)
 
         @override
         def exit_procedure(self, procedure: taf.Procedure) -> None:

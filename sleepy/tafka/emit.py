@@ -131,15 +131,17 @@ class TafkaEmitVisitor(ProgramVisitor[None]):
         procedure = taf.Procedure(
             name=label.name,
             entry=taf.Block(label, statements=[]),
-            parameters=[
-                self.next_var(taf.Kind.from_sleepy(param.kind))
-                for param in tree.parameters
-            ],
+            parameters=[],
             value=taf.Unknown(),
         )
 
         self.current_procedure = procedure
         self.current_block = procedure.entry
+
+        procedure.parameters = [
+            self.next_var(taf.Kind.from_sleepy(param.kind))
+            for param in tree.parameters
+        ]
 
         for param, var in zip(
             tree.parameters,
@@ -148,9 +150,15 @@ class TafkaEmitVisitor(ProgramVisitor[None]):
         ):
             self.vars[param.name] = var
 
+        self.emit_intermidiate(
+            taf.Load(taf.Const(label.name, procedure.signature)),
+        )
+        self.vars[tree.namespace.resolved("self")] = self.last_result
+
         for statement in tree.statements:
             self.visit_expression(statement)
         self.emit_statement(taf.Return(self.last_result))
+        procedure.value = self.last_result.kind
 
         self.current_block = current_block
         self.current_procedure = current_procedure

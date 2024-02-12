@@ -44,6 +44,7 @@ tafka: |-
   026. }
 
 tafka-usages: |
+  $main: () -> int:
   001. %0: r3 w0
   002. %1: r3 w0
   003. %0: r0 w0, %1: r0 w0, %2: r4 w0

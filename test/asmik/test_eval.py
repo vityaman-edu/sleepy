@@ -54,6 +54,33 @@ import pytest
             """,
             "1",
         ),
+        (
+            """
+            (def id (lambda (n int)
+                (if (eq n 0) 0 (sum (self (sum n -1)) 1))))
+            (if (and (eq (id 1) 1)
+                (and (eq (id 2) 2)
+                     (eq (id 3) 3))) 1 0)
+            """,
+            "1",
+        ),
+        (
+            """
+            (def fibb (lambda (n int)
+                (if (or (eq n 0) (eq n 1))
+                    1
+                    (sum
+                        (self (sum n -1))
+                        (self (sum n -2))))))
+            (if (and (eq (fibb 0) 1)
+                (and (eq (fibb 1) 1)
+                (and (eq (fibb 2) 2)
+                (and (eq (fibb 3) 3)
+                (and (eq (fibb 4) 5)
+                     (eq (fibb 5) 8)))))) 1 0)
+            """,
+            "1",
+        ),
     ],
 )
 def test_evaluate(src: str, res: str) -> None:

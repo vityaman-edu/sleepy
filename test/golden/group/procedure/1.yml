@@ -6,27 +6,35 @@ sleepy: |-
 tafka: |-
   000. procedure @0(%0: int, %1: int) -> int {
   000. 0:
-  001.   %2: int = mul %0: int, %0: int
-  002.   %3: int = mul %1: int, %1: int
-  003.   %4: int = sum %2: int, %3: int
-  004.   return %4: int
-  004. }
-  004. 
-  004. procedure @main() -> int {
-  004. main:
-  005.   %5: (int, int) -> int = load $0: (int, int) -> int
-  006.   %6: int = load $1: int
-  007.   %7: int = load $2: int
-  008.   %8: int = invoke @5 %6: int, %7: int
-  009.   return %8: int
-  009. }
+  001.   %2: (int, int) -> ? = load $0: (int, int) -> ?
+  002.   %3: int = mul %0: int, %0: int
+  003.   %4: int = mul %1: int, %1: int
+  004.   %5: int = sum %3: int, %4: int
+  005.   return %5: int
+  005. }
+  005. 
+  005. procedure @main() -> int {
+  005. main:
+  006.   %6: (int, int) -> int = load $0: (int, int) -> int
+  007.   %7: int = load $1: int
+  008.   %8: int = load $2: int
+  009.   %9: int = invoke @6 %7: int, %8: int
+  010.   return %9: int
+  010. }
 
 tafka-usages: |
-  001. %5: r4 w0
-  002. %6: r4 w0
-  003. %7: r4 w0
-  004. %8: r5 w0, %5: r0 w0, %6: r0 w0, %7: r0 w0
-  005. %8: r0 w0
+  $0: (int, int) -> int:
+  001. %2: r0 w0
+  002. %0: r0 w0, %0: r0 w0, %3: r4 w0
+  003. %1: r0 w0, %1: r0 w0, %4: r4 w0
+  004. %3: r0 w0, %4: r0 w0, %5: r5 w0
+  005. %5: r0 w0
+  $main: () -> int:
+  001. %6: r4 w0
+  002. %7: r4 w0
+  003. %8: r4 w0
+  004. %9: r5 w0, %6: r0 w0, %7: r0 w0, %8: r0 w0
+  005. %9: r0 w0
 
 
 asmik-virt: |-
@@ -34,7 +42,7 @@ asmik-virt: |-
   0000: 0
   0008: 1
   0016: 2
-  0024: 60
+  0024: 68
   memory instr
   0000: addim v0, ze, 24
   0004: load v0, v0
@@ -42,19 +50,23 @@ asmik-virt: |-
   0012: load v1, v1
   0016: addim v2, ze, 16
   0020: load v2, v2
-  0024: addim a1, v1, 0
-  0028: addim a2, v2, 0
-  0032: addim v3, ra, 0
-  0036: addim ra, ip, 4
-  0040: brn ze, v0
-  0044: addim v4, a1, 0
-  0048: addim ra, v3, 0
-  0052: addim a1, v4, 0
-  0056: brn ze, ra
-  0060: addim v5, a1, 0
-  0064: addim v6, a2, 0
-  0068: muli v7, v5, v5
-  0072: muli v8, v6, v6
-  0076: addi v9, v7, v8
-  0080: addim a1, v9, 0
-  0084: brn ze, ra
+  0024: stor sp, ra
+  0028: addim sp, sp, 8
+  0032: addim a1, v1, 0
+  0036: addim a2, v2, 0
+  0040: addim ra, ip, 4
+  0044: brn ze, v0
+  0048: addim v3, a1, 0
+  0052: addim sp, sp, -8
+  0056: load ra, sp
+  0060: addim a1, v3, 0
+  0064: brn ze, ra
+  0068: addim v4, a1, 0
+  0072: addim v5, a2, 0
+  0076: addim v6, ze, 24
+  0080: load v6, v6
+  0084: muli v7, v4, v4
+  0088: muli v8, v5, v5
+  0092: addi v9, v7, v8
+  0096: addim a1, v9, 0
+  0100: brn ze, ra

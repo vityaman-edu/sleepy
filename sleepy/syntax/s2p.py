@@ -78,7 +78,7 @@ class S2PVisitor(ASTVisitor[ProgramNode]):
         for parameter in parameters:
             self.bindings.bind(parameter.name, parameter)
 
-        closure = Closure(parameters, statements=[])
+        closure = Closure(parameters, statements=[], namespace=self.namespace)
         self.bindings.bind(self.namespace.define(Symbol("self")), closure)
 
         closure.statements = [

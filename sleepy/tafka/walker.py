@@ -178,6 +178,10 @@ class TafkaWalker:
             self.block: Block
 
         @override
+        def enter_procedure(self, procedure: Procedure) -> None:
+            self.position = 0
+
+        @override
         def enter_block(self, block: Block) -> None:
             self.block = block
 

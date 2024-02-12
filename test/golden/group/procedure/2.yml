@@ -5,42 +5,51 @@ sleepy: |-
 tafka: |-
   000. procedure @0(%0: int) -> int {
   000. 0:
-  001.   return %0: int
-  001. }
-  001. 
-  001. procedure @main() -> int {
-  001. main:
-  002.   %1: (int) -> int = load $0: (int) -> int
-  003.   %2: int = load $5: int
-  004.   %3: int = invoke @1 %2: int
-  005.   return %3: int
-  005. }
+  001.   %1: (int) -> ? = load $0: (int) -> ?
+  002.   return %0: int
+  002. }
+  002. 
+  002. procedure @main() -> int {
+  002. main:
+  003.   %2: (int) -> int = load $0: (int) -> int
+  004.   %3: int = load $5: int
+  005.   %4: int = invoke @2 %3: int
+  006.   return %4: int
+  006. }
 
 tafka-usages: |
-  001. %1: r3 w0
-  002. %2: r3 w0
-  003. %3: r4 w0, %1: r0 w0, %2: r0 w0
-  004. %3: r0 w0
+  $0: (int) -> int:
+  001. %1: r0 w0
+  002. %0: r0 w0
+  $main: () -> int:
+  001. %2: r3 w0
+  002. %3: r3 w0
+  003. %4: r4 w0, %2: r0 w0, %3: r0 w0
+  004. %4: r0 w0
 
 
 asmik-virt: |-
   memory stack
   0000: 0
   0008: 5
-  0016: 48
+  0016: 56
   memory instr
   0000: addim v0, ze, 16
   0004: load v0, v0
   0008: addim v1, ze, 8
   0012: load v1, v1
-  0016: addim a1, v1, 0
-  0020: addim v2, ra, 0
-  0024: addim ra, ip, 4
-  0028: brn ze, v0
-  0032: addim v3, a1, 0
-  0036: addim ra, v2, 0
-  0040: addim a1, v3, 0
-  0044: brn ze, ra
-  0048: addim v4, a1, 0
-  0052: addim a1, v4, 0
-  0056: brn ze, ra
+  0016: stor sp, ra
+  0020: addim sp, sp, 8
+  0024: addim a1, v1, 0
+  0028: addim ra, ip, 4
+  0032: brn ze, v0
+  0036: addim v2, a1, 0
+  0040: addim sp, sp, -8
+  0044: load ra, sp
+  0048: addim a1, v2, 0
+  0052: brn ze, ra
+  0056: addim v3, a1, 0
+  0060: addim v4, ze, 16
+  0064: load v4, v4
+  0068: addim a1, v3, 0
+  0072: brn ze, ra
