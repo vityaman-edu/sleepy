@@ -4,6 +4,7 @@ sleepy: |-
     (if (eq 1 1) 1 1))
 
 tafka: |-
+  000. procedure @main() -> int {
   000. main:
   001.   %0: int = load $1: int
   002.   %1: int = load $1: int
@@ -40,6 +41,7 @@ tafka: |-
   025.   goto 2
   025. 2:
   026.   return %6: int
+  026. }
 
 tafka-usages: |
   001. %0: r3 w0
@@ -66,11 +68,12 @@ tafka-usages: |
 
 asmik-virt: |-
   memory stack
-  0000: 1
+  0000: 0
+  0008: 1
   memory instr
-  0000: addim v0, ze, 0
+  0000: addim v0, ze, 8
   0004: load v0, v0
-  0008: addim v1, ze, 0
+  0008: addim v1, ze, 8
   0012: load v1, v1
   0016: slti v2, v0, v1
   0020: slti v3, v1, v0
@@ -79,9 +82,9 @@ asmik-virt: |-
   0032: xorb v2, v2, v4
   0036: addim v5, ze, 132
   0040: brn v2, v5
-  0044: addim v6, ze, 0
+  0044: addim v6, ze, 8
   0048: load v6, v6
-  0052: addim v7, ze, 0
+  0052: addim v7, ze, 8
   0056: load v7, v7
   0060: slti v8, v6, v7
   0064: slti v9, v7, v6
@@ -90,20 +93,20 @@ asmik-virt: |-
   0076: xorb v8, v8, v10
   0080: addim v11, ze, 104
   0084: brn v8, v11
-  0088: addim v12, ze, 0
+  0088: addim v12, ze, 8
   0092: load v12, v12
   0096: addim v13, ze, 124
   0100: brn ze, v13
-  0104: addim v14, ze, 0
+  0104: addim v14, ze, 8
   0108: load v14, v14
   0112: addim v12, v14, 0
   0116: addim v15, ze, 124
   0120: brn ze, v15
   0124: addim v16, ze, 224
   0128: brn ze, v16
-  0132: addim v17, ze, 0
+  0132: addim v17, ze, 8
   0136: load v17, v17
-  0140: addim v18, ze, 0
+  0140: addim v18, ze, 8
   0144: load v18, v18
   0148: slti v19, v17, v18
   0152: slti v20, v18, v17
@@ -112,11 +115,11 @@ asmik-virt: |-
   0164: xorb v19, v19, v21
   0168: addim v22, ze, 192
   0172: brn v19, v22
-  0176: addim v23, ze, 0
+  0176: addim v23, ze, 8
   0180: load v23, v23
   0184: addim v24, ze, 212
   0188: brn ze, v24
-  0192: addim v25, ze, 0
+  0192: addim v25, ze, 8
   0196: load v25, v25
   0200: addim v23, v25, 0
   0204: addim v26, ze, 212

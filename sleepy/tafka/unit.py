@@ -3,14 +3,14 @@ from dataclasses import dataclass
 from sleepy.program import ProgramUnit
 
 from .emit import TafkaEmitVisitor
-from .representation import Block, Procedure
+from .representation import Procedure
 from .text import TafkaTextListener
 from .walker import TafkaWalker
 
 
 @dataclass
 class TafkaUnit:
-    main: Block
+    main: Procedure
     procedures: list[Procedure]
 
     @staticmethod
@@ -26,6 +26,6 @@ class TafkaUnit:
         for procedure in self.procedures:
             walker.explore_procedure(procedure)
             out.writeln("")
-        walker.explore_block(self.main)
+        walker.explore_procedure(self.main)
 
         return out.text.getvalue()

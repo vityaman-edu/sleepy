@@ -10,7 +10,12 @@ class TafkaEmitVisitor(ProgramVisitor[None]):
     def __init__(self, unit: ProgramUnit) -> None:
         self.unit = unit
 
-        self.main = taf.Block(taf.Label("main"), [])
+        self.main = taf.Procedure(
+            name="main",
+            entry=taf.Block(taf.Label("main"), []),
+            parameters=[],
+            value=taf.Unknown(),
+        )
         self.procedures: list[taf.Procedure] = []
 
         self.var_names = map(str, range(10000000))
@@ -18,7 +23,7 @@ class TafkaEmitVisitor(ProgramVisitor[None]):
 
         self.vars = MetaTable[taf.Var]()
 
-        self.current_block = self.main
+        self.current_block = self.main.entry
         self.last_result = taf.Var("0", taf.Int())
 
     @override
@@ -26,6 +31,7 @@ class TafkaEmitVisitor(ProgramVisitor[None]):
         for statement in tree.statements:
             self.visit_expression(statement)
         self.emit_statement(taf.Return(self.last_result))
+        self.main.value = self.last_result.kind
 
     @override
     def visit_conditional(self, tree: program.Conditional) -> None:

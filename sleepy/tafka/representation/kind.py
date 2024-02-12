@@ -19,6 +19,13 @@ class Kind(Node):
 
 
 @dataclass(repr=False)
+class Unknown(Kind):
+    @override
+    def __repr__(self) -> str:
+        return "?"
+
+
+@dataclass(repr=False)
 class Int(Kind):
     @override
     def __repr__(self) -> str:
@@ -39,7 +46,4 @@ class Signature(Kind):
 
     @override
     def __repr__(self) -> str:
-        return (
-            f"({', '.join(repr(_) for _ in self.params)}) "
-            f"-> {self.value!r}"
-        )
+        return f"({', '.join(repr(_) for _ in self.params)}) -> {self.value!r}"

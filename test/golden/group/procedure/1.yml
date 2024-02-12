@@ -12,12 +12,14 @@ tafka: |-
   004.   return %4: int
   004. }
   004. 
+  004. procedure @main() -> int {
   004. main:
   005.   %5: (int, int) -> int = load $0: (int, int) -> int
   006.   %6: int = load $1: int
   007.   %7: int = load $2: int
   008.   %8: int = invoke @5 %6: int, %7: int
   009.   return %8: int
+  009. }
 
 tafka-usages: |
   001. %5: r4 w0
@@ -29,15 +31,16 @@ tafka-usages: |
 
 asmik-virt: |-
   memory stack
-  0000: 1
-  0008: 2
-  0016: 60
+  0000: 0
+  0008: 1
+  0016: 2
+  0024: 60
   memory instr
-  0000: addim v0, ze, 16
+  0000: addim v0, ze, 24
   0004: load v0, v0
-  0008: addim v1, ze, 0
+  0008: addim v1, ze, 8
   0012: load v1, v1
-  0016: addim v2, ze, 8
+  0016: addim v2, ze, 16
   0020: load v2, v2
   0024: addim a1, v1, 0
   0028: addim a2, v2, 0

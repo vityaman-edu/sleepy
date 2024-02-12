@@ -7,6 +7,7 @@ sleepy: |-
   (eq a 3)
 
 tafka: |-
+  000. procedure @main() -> bool {
   000. main:
   001.   %0: int = load $1: int
   002.   %1: int = load $1: int
@@ -17,6 +18,7 @@ tafka: |-
   007.   %6: int = load $3: int
   008.   %7: bool = eq %3: int, %6: int
   009.   return %7: bool
+  009. }
 
 tafka-usages: |
   001. %0: r3 w0
@@ -32,29 +34,30 @@ tafka-usages: |
 
 asmik-virt: |-
   memory stack
-  0000: 1
-  0008: 2
-  0016: 3
+  0000: 0
+  0008: 1
+  0016: 2
+  0024: 3
   memory instr
-  0000: addim v0, ze, 0
+  0000: addim v0, ze, 8
   0004: load v0, v0
-  0008: addim v1, ze, 0
+  0008: addim v1, ze, 8
   0012: load v1, v1
   0016: slti v2, v0, v1
   0020: slti v3, v1, v0
   0024: orb v2, v2, v3
   0028: addim v4, ze, 18446744073709551615
   0032: xorb v2, v2, v4
-  0036: addim v5, ze, 8
+  0036: addim v5, ze, 16
   0040: load v5, v5
-  0044: addim v6, ze, 8
+  0044: addim v6, ze, 16
   0048: load v6, v6
   0052: slti v7, v5, v6
   0056: slti v8, v6, v5
   0060: orb v7, v7, v8
   0064: addim v9, ze, 18446744073709551615
   0068: xorb v7, v7, v9
-  0072: addim v10, ze, 16
+  0072: addim v10, ze, 24
   0076: load v10, v10
   0080: slti v11, v5, v10
   0084: slti v12, v10, v5

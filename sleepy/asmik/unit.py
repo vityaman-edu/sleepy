@@ -26,7 +26,7 @@ class AsmikUnit:
         asmik = AsmikEmitListener()
         walker = TafkaWalker(asmik)
 
-        walker.explore_block(tafka.main)
+        walker.explore_procedure(tafka.main)
         for proc in tafka.procedures:
             walker.explore_procedure(proc)
 
