@@ -1,6 +1,6 @@
 from test.program.parse import parse
 
-from sleepy.tafka.emit import TafkaUnit
+from sleepy.tafka import TafkaUnit
 
 
 def tafka_emit(source: str) -> TafkaUnit:

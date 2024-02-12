@@ -8,12 +8,12 @@ from sleepy.program import (
     Integer,
     Kind,
     Program,
+    ProgramVisitor,
     Symbol,
-    Visitor,
 )
 
 
-class FormatVisitor(Visitor[None]):
+class FormatVisitor(ProgramVisitor[None]):
     def __init__(self) -> None:
         self.prefix = ""
         self.step = ""

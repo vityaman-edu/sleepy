@@ -3,7 +3,9 @@ import string
 import pytest
 from hypothesis import given, strategies
 
-from sleepy.syntax import SleepySyntaxError, parse_program
+from sleepy.syntax import ParsingError
+
+from .parse import parse_program
 
 
 @pytest.mark.parametrize(
@@ -25,7 +27,7 @@ def test_symbol_lexing_badly() -> None:
     ["", "css-style", '"', "sto%nks"],
 )
 def test_symbol_negative(source: str) -> None:
-    with pytest.raises(SleepySyntaxError):
+    with pytest.raises(ParsingError):
         parse_program(source)
 
 

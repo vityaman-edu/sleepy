@@ -1,19 +1,20 @@
 from typing import Any, cast
 
-from sleepy.asmik.argument import Integer, Register
-from sleepy.asmik.data import IntegerData
-from sleepy.asmik.emit import AsmikUnit
-from sleepy.asmik.instruction import (
+from sleepy.asmik import (
     Addi,
     Addim,
     Andb,
+    AsmikUnit,
     Brn,
     Divi,
     Hlt,
     Instruction,
+    Integer,
+    IntegerData,
     Load,
     Muli,
     Orb,
+    Register,
     Remi,
     Slti,
     Stor,

@@ -1,7 +1,8 @@
 import pytest
 
-from sleepy.syntax import Program, SleepySyntaxError, parse_program
-from sleepy.syntax.binding import (
+from sleepy.syntax import ParsingError, Program
+
+from .binding import (
     define,
     func,
     if_stmt,
@@ -10,6 +11,7 @@ from sleepy.syntax.binding import (
     program,
     symbol,
 )
+from .parse import parse_program
 
 
 @pytest.mark.parametrize(
@@ -128,7 +130,7 @@ def test_parse_positive(source: str, expected: Program) -> None:
     ],
 )
 def test_parse_bad_braces(source: str) -> None:
-    with pytest.raises(SleepySyntaxError):
+    with pytest.raises(ParsingError):
         parse_program(source)
 
 
@@ -144,5 +146,5 @@ def test_parse_bad_braces(source: str) -> None:
     ],
 )
 def test_parse_bad_lambda(source: str) -> None:
-    with pytest.raises(SleepySyntaxError):
+    with pytest.raises(ParsingError):
         parse_program(source)

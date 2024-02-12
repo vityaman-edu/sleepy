@@ -21,7 +21,6 @@ from .representation import (
     Program,
     ProgramNode,
     Symbol,
-    SymbolId,
 )
 from .unit import ProgramUnit
-from .visitor import Visitor
+from .visitor import ProgramVisitor

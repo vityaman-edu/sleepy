@@ -1,6 +1,6 @@
 from lark.tree import Meta
 
-from . import (
+from sleepy.syntax import (
     Application,
     Args,
     Body,

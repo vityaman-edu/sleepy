@@ -18,24 +18,20 @@ from sleepy.program import (
 from sleepy.program.builtin import BuiltinLayer
 from sleepy.program.unit import ProgramUnit
 
-from .lark import Application as ApplicationAST
-from .lark import IfExpression as IfExpressionAST
-from .lark import Kind as KindAST
-from .lark import Lambda as LambdaAST
-from .lark import Program as ProgramAST
-from .lark import Symbol as SymbolAST
-from .lark import VariableDefinition as VariableDefinitionAST
-from .lark import _Expression as ExpressionAST
-from .lark import _Integer as IntegerAST
-from .visitor import Visitor
+from .tree import Application as ApplicationAST
+from .tree import IfExpression as IfExpressionAST
+from .tree import Kind as KindAST
+from .tree import Lambda as LambdaAST
+from .tree import Program as ProgramAST
+from .tree import Symbol as SymbolAST
+from .tree import VariableDefinition as VariableDefinitionAST
+from .tree import _Expression as ExpressionAST
+from .tree import _Integer as IntegerAST
+from .visitor import ASTVisitor
 
 
-class Syntax2Program(Visitor[ProgramNode]):
-    def __init__(
-        self,
-        namespace: Namespace,
-        bindings: Bindings,
-    ) -> None:
+class S2PVisitor(ASTVisitor[ProgramNode]):
+    def __init__(self, namespace: Namespace, bindings: Bindings) -> None:
         self.namespace = namespace
         self.bindings = bindings
 
@@ -59,13 +55,8 @@ class Syntax2Program(Visitor[ProgramNode]):
     @override
     def visit_application(self, tree: ApplicationAST) -> ProgramNode:
         return Application(
-            invokable=self.visit_expression(
-                tree.invokable.expression,
-            ),
-            args=[
-                self.visit_expression(arg)
-                for arg in tree.args.expressions
-            ],
+            invokable=self.visit_expression(tree.invokable.expression),
+            args=[self.visit_expression(arg) for arg in tree.args.expressions],
         )
 
     @override
@@ -88,10 +79,7 @@ class Syntax2Program(Visitor[ProgramNode]):
             self.bindings.bind(parameter.name, parameter)
 
         closure = Closure(parameters, statements=[])
-        self.bindings.bind(
-            self.namespace.define(Symbol("self")),
-            closure,
-        )
+        self.bindings.bind(self.namespace.define(Symbol("self")), closure)
 
         closure.statements = [
             self.visit_expression(expression)
@@ -110,7 +98,8 @@ class Syntax2Program(Visitor[ProgramNode]):
         match tree.name.name:
             case "int":
                 return Kind("int")
-        raise NotImplementedError
+            case _:
+                raise NotImplementedError
 
     @override
     def visit_integer(self, tree: IntegerAST) -> Integer:
@@ -127,19 +116,16 @@ class Syntax2Program(Visitor[ProgramNode]):
         return Definition(symbol, expression)
 
     @override
-    def visit_expression(
-        self,
-        expression: ExpressionAST,
-    ) -> Expression:
+    def visit_expression(self, expression: ExpressionAST) -> Expression:
         return cast(Expression, super().visit_expression(expression))
 
-    @classmethod
-    def converted(cls, tree: ProgramAST) -> ProgramUnit:
-        builtin = BuiltinLayer()
-        s2p = Syntax2Program(builtin.namespace, builtin.bindings)
-        program = s2p.visit_program(tree)
-        return ProgramUnit(
-            program=program,
-            bindings=s2p.bindings,
-            root=builtin.namespace,
-        )
+
+def to_program(tree: ProgramAST) -> ProgramUnit:
+    builtin = BuiltinLayer()
+    s2p = S2PVisitor(builtin.namespace, builtin.bindings)
+    program = s2p.visit_program(tree)
+    return ProgramUnit(
+        program=program,
+        bindings=s2p.bindings,
+        root=builtin.namespace,
+    )

@@ -4,13 +4,13 @@ sleepy: |-
   (def c (sum a b))
 
 tafka: |-
-  label(main):
-  var(0): int = load(const(1): int): int
-  var(1): int = load(const(2): int): int
-  var(2): int = load(const(3): int): int
-  var(3): int = sum(var(1): int, var(2): int): int
-  var(4): int = sum(var(0): int, var(3): int): int
-  return var(4): int
+  main:
+    %0: int = load $1: int
+    %1: int = load $2: int
+    %2: int = load $3: int
+    %3: int = sum %1: int, %2: int
+    %4: int = sum %0: int, %3: int
+    return %4: int
 
 asmik-virt: |-
   memory stack

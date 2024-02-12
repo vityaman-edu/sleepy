@@ -1,12 +1,14 @@
 from dataclasses import dataclass
+from typing import override
 
-SymbolId = int
+from sleepy.core import UID, Identifiable
 
 
-class ProgramNode:
+class ProgramNode(Identifiable):
     @property
-    def uid(self) -> SymbolId:
-        return id(self)
+    @override
+    def uid(self) -> UID:
+        return UID(id(self))
 
 
 class Expression(ProgramNode):

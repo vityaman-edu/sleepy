@@ -1,2 +1,0 @@
-class SleepySyntaxError(Exception):
-    pass

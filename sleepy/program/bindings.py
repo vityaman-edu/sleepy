@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import override
 
+from sleepy.core import MetaTable
+
 from .representation import Expression, Symbol
 
 
@@ -17,14 +19,14 @@ class Bindings(ABC):
 class BasicBindings(Bindings):
     def __init__(
         self,
-        expressions: dict[int, Expression] | None = None,
+        expressions: MetaTable[Expression] | None = None,
     ) -> None:
-        self.expressions = expressions or {}
+        self.expressions = expressions or MetaTable()
 
     @override
     def bind(self, symbol: Symbol, expression: Expression) -> None:
-        self.expressions[symbol.uid] = expression
+        self.expressions[symbol] = expression
 
     @override
     def resolve(self, symbol: Symbol) -> Expression:
-        return self.expressions[symbol.uid]
+        return self.expressions[symbol]

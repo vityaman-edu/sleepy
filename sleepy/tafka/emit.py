@@ -1,116 +1,79 @@
-from collections.abc import Generator
 from typing import override
 
-from sleepy.program import (
-    Application,
-    Closure,
-    Conditional,
-    Definition,
-    Integer,
-    Intrinsic,
-    Kind,
-    Program,
-    Symbol,
-    SymbolId,
-    Visitor,
-)
-from sleepy.program.unit import ProgramUnit
-from sleepy.tafka.representation import (
-    Block,
-    Const,
-    Copy,
-    Div,
-    Eq,
-    Goto,
-    Int,
-    Label,
-    Load,
-    Lt,
-    Mul,
-    Procedure,
-    Rem,
-    Return,
-    RValue,
-    Set,
-    Statement,
-    Sum,
-    Var,
-)
-from sleepy.tafka.representation import Conditional as TafConditional
-from sleepy.tafka.representation import Kind as TafKind
-from sleepy.tafka.representation.rvalue import And, Invokation, Or
-
-UniqueNameSequence = Generator[str, None, None]
+import sleepy.tafka.representation as taf
+from sleepy import program
+from sleepy.core import MetaTable
+from sleepy.program import ProgramUnit, ProgramVisitor
 
 
-class TafkaEmitVisitor(Visitor[None]):
+class TafkaEmitVisitor(ProgramVisitor[None]):
     def __init__(self, unit: ProgramUnit) -> None:
         self.unit = unit
 
-        self.main = Block(Label("main"), [])
+        self.main = taf.Block(taf.Label("main"), [])
+        self.procedures: list[taf.Procedure] = []
 
         self.var_names = map(str, range(10000000))
         self.lbl_names = map(str, range(10000000))
 
-        self.vars: dict[SymbolId, Var] = {}
-        self.procedures: list[Procedure] = []
+        self.vars = MetaTable[taf.Var]()
 
         self.current_block = self.main
-        self.last_result = Var("0", Int())
+        self.last_result = taf.Var("0", taf.Int())
 
     @override
-    def visit_program(self, tree: Program) -> None:
+    def visit_program(self, tree: program.Program) -> None:
         for statement in tree.statements:
             self.visit_expression(statement)
-        self.emit_statement(Return(self.last_result))
+        self.emit_statement(taf.Return(self.last_result))
 
     @override
-    def visit_conditional(self, tree: Conditional) -> None:
-        then_blk = Block(self.next_lbl(), [])
-        else_blk = Block(self.next_lbl(), [])
-        next_blk = Block(self.next_lbl(), [])
+    def visit_conditional(self, tree: program.Conditional) -> None:
+        then_blk = taf.Block(self.next_lbl(), [])
+        else_blk = taf.Block(self.next_lbl(), [])
+        next_blk = taf.Block(self.next_lbl(), [])
 
         self.visit_expression(tree.condition)
         condition = self.last_result
 
-        br = TafConditional(condition, then_blk, else_blk, next_blk)
+        br = taf.Conditional(condition, then_blk, else_blk, next_blk)
         self.emit_statement(br)
 
         self.current_block = then_blk
         self.visit_expression(tree.then_branch)
         then_result = self.last_result
-        self.emit_statement(Goto(next_blk))
+        self.emit_statement(taf.Goto(next_blk))
 
         self.current_block = else_blk
         self.visit_expression(tree.else_branch)
-        self.emit_statement(Set(then_result, Copy(self.last_result)))
-        self.emit_statement(Goto(next_blk))
+        self.emit_statement(taf.Set(then_result, taf.Copy(self.last_result)))
+        self.emit_statement(taf.Goto(next_blk))
 
         self.current_block = next_blk
 
     @override
-    def visit_application(self, tree: Application) -> None:
+    def visit_application(self, tree: program.Application) -> None:
         args = []
         for arg in tree.args:
             self.visit_expression(arg)
             args.append(self.last_result)
 
         match tree.invokable:
-            case Symbol() as symbol:
+            case program.Symbol() as symbol:
                 invokable = self.unit.bindings.resolve(symbol)
                 match invokable:
-                    case Intrinsic() as intrinsic:
+                    case program.Intrinsic() as intrinsic:
                         self.visit_application_intrinsic(
                             intrinsic,
                             args,
                         )
-                    case Closure() as closure:
+                    case program.Closure() as closure:
                         self.visit_symbol(symbol)
                         self.visit_application_variable(
                             self.last_result,
                             args,
                         )
-            case Closure() as closure:
+            case program.Closure() as closure:
                 self.visit_lambda(closure)
                 self.visit_application_variable(
                     self.last_result,
@@ -119,105 +82,98 @@ class TafkaEmitVisitor(Visitor[None]):
 
     def visit_application_intrinsic(
         self,
-        intrinsic: Intrinsic,
-        args: list[Var],
+        intrinsic: program.Intrinsic,
+        args: list[taf.Var],
     ) -> None:
+        rvalue: taf.RValue
         match intrinsic.name.name:
             case "sum":
-                self.emit_intermidiate(Sum(args[0], args[1]))
+                rvalue = taf.Sum(args[0], args[1])
             case "div":
-                self.emit_intermidiate(Div(args[0], args[1]))
+                rvalue = taf.Div(args[0], args[1])
             case "rem":
-                self.emit_intermidiate(Rem(args[0], args[1]))
+                rvalue = taf.Rem(args[0], args[1])
             case "mul":
-                self.emit_intermidiate(Mul(args[0], args[1]))
+                rvalue = taf.Mul(args[0], args[1])
             case "eq":
-                self.emit_intermidiate(Eq(args[0], args[1]))
+                rvalue = taf.Eq(args[0], args[1])
             case "lt":
-                self.emit_intermidiate(Lt(args[0], args[1]))
+                rvalue = taf.Lt(args[0], args[1])
             case "and":
-                self.emit_intermidiate(And(args[0], args[1]))
+                rvalue = taf.And(args[0], args[1])
             case "or":
-                self.emit_intermidiate(Or(args[0], args[1]))
+                rvalue = taf.Or(args[0], args[1])
             case _:
                 raise NotImplementedError(str(intrinsic))
+        self.emit_intermidiate(rvalue)
 
     def visit_application_variable(
         self,
-        invokable: Var,
-        args: list[Var],
+        invokable: taf.Var,
+        args: list[taf.Var],
     ) -> None:
-        self.emit_intermidiate(Invokation(invokable, args))
+        self.emit_intermidiate(taf.Invokation(invokable, args))
 
     @override
-    def visit_lambda(self, tree: Closure) -> None:
+    def visit_lambda(self, tree: program.Closure) -> None:
         current_block = self.current_block
 
         label = self.next_lbl()
 
         params = [
-            self.next_var(TafKind.from_sleepy(param.kind))
+            self.next_var(taf.Kind.from_sleepy(param.kind))
             for param in tree.parameters
         ]
 
         for param, var in zip(tree.parameters, params, strict=True):
-            self.vars[param.name.uid] = var
+            self.vars[param.name] = var
 
-        body = Block(label, statements=[])
+        body = taf.Block(label, statements=[])
 
         self.current_block = body
         for statement in tree.statements:
             self.visit_expression(statement)
 
-        self.emit_statement(Return(self.last_result))
+        self.emit_statement(taf.Return(self.last_result))
 
         value = self.last_result.kind
 
         self.current_block = current_block
 
-        procedure = Procedure(label.name, body, params, value)
+        procedure = taf.Procedure(label.name, body, params, value)
         self.procedures.append(procedure)
 
         self.emit_intermidiate(
-            Load(Const(label.name, procedure.signature)),
+            taf.Load(taf.Const(label.name, procedure.signature)),
         )
 
     @override
-    def visit_symbol(self, tree: Symbol) -> None:
-        self.last_result = self.vars[tree.uid]
+    def visit_symbol(self, tree: program.Symbol) -> None:
+        self.last_result = self.vars[tree]
 
     @override
-    def visit_kind(self, tree: Kind) -> None:
+    def visit_kind(self, tree: program.Kind) -> None:
         raise NotImplementedError
 
     @override
-    def visit_integer(self, tree: Integer) -> None:
-        self.emit_intermidiate(Load(Const(str(tree.value), Int())))
+    def visit_integer(self, tree: program.Integer) -> None:
+        self.emit_intermidiate(taf.Load(taf.Const(str(tree.value), taf.Int())))
 
     @override
-    def visit_definition(self, tree: Definition) -> None:
+    def visit_definition(self, tree: program.Definition) -> None:
         self.visit_expression(tree.expression)
-        self.vars[tree.symbol.uid] = self.last_result
+        self.vars[tree.symbol] = self.last_result
 
-    def emit_statement(self, statement: Statement) -> None:
-        if isinstance(statement, Set):
+    def emit_statement(self, statement: taf.Statement) -> None:
+        if isinstance(statement, taf.Set):
             self.last_result = statement.target
         self.current_block.statements.append(statement)
 
-    def emit_intermidiate(self, rvalue: RValue) -> None:
-        self.emit_statement(Set(self.next_var(rvalue.value), rvalue))
+    def emit_intermidiate(self, rvalue: taf.RValue) -> None:
+        self.emit_statement(taf.Set(self.next_var(rvalue.value), rvalue))
 
-    def next_var(self, kind: TafKind) -> Var:
-        return Var(next(self.var_names), kind)
+    def next_var(self, kind: taf.Kind) -> taf.Var:
+        return taf.Var(next(self.var_names), kind)
 
-    def next_lbl(self) -> Label:
-        return Label(next(self.lbl_names))
-
-    @staticmethod
-    def emitted_from(unit: ProgramUnit) -> "TafkaUnit":
-        tafka = TafkaEmitVisitor(unit)
-        tafka.visit_program(unit.program)
-        return tafka
-
-
-TafkaUnit = TafkaEmitVisitor
+    def next_lbl(self) -> taf.Label:
+        return taf.Label(next(self.lbl_names))

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import cast, override
+from typing import cast
 
 from .kind import Kind, Signature
 from .node import Node
@@ -15,76 +15,46 @@ class Jump(Statement):
     pass
 
 
-@dataclass(repr=False)
+@dataclass
 class Return(Jump):
     value: Var
 
-    @override
-    def __repr__(self) -> str:
-        return f"return {self.value}"
 
-
-@dataclass(repr=False)
+@dataclass
 class Label:
     name: str
 
-    def __repr__(self) -> str:
-        return f"label({self.name})"
 
-
-@dataclass(repr=False)
+@dataclass
 class Block(Node):
     label: Label
     statements: list[Statement]
-
-    @override
-    def __repr__(self) -> str:
-        return f"{self.label!r}:\n" + "\n".join(
-            map(repr, self.statements),
-        )
 
     @property
     def last(self) -> Jump:
         return cast(Jump, self.statements[-1])
 
 
-@dataclass(repr=False)
+@dataclass
 class Set(Statement):
     target: Var
     source: RValue
 
-    @override
-    def __repr__(self) -> str:
-        return f"{self.target!r} = {self.source!r}"
 
-
-@dataclass(repr=False)
+@dataclass
 class Goto(Jump):
     block: Block
 
-    @override
-    def __repr__(self) -> str:
-        return f"goto {self.block.label!r}"
 
-
-@dataclass(repr=False)
+@dataclass
 class Conditional(Jump):
     condition: Var
     then_branch: Block
     else_branch: Block
     next_block: Block
 
-    @override
-    def __repr__(self) -> str:
-        return (
-            f"if {self.condition!r} "
-            f"then {self.then_branch.label!r} "
-            f"else {self.else_branch.label!r} "
-            f"end {self.next_block.label!r}"
-        )
 
-
-@dataclass(repr=False)
+@dataclass
 class Procedure(Node):
     name: str
     entry: Block
@@ -101,11 +71,3 @@ class Procedure(Node):
     @property
     def const(self) -> Const:
         return Const(self.name, self.signature)
-
-    @override
-    def __repr__(self) -> str:
-        return (
-            f"procedure {self.name}("
-            f"{', '.join(map(repr, self.parameters))}) "
-            f"-> {self.value!r}"
-        )

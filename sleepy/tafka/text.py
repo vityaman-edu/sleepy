@@ -1,39 +1,111 @@
-from sleepy.tafka.emit import TafkaEmitVisitor
-from sleepy.tafka.representation import (
-    Block,
-    Conditional,
-    Goto,
-    Return,
-)
+from io import StringIO
+from typing import override
+
+import sleepy.tafka.representation as taf
+
+from .walker import TafkaWalker
 
 
-def tafka_text(tafka: TafkaEmitVisitor) -> str:
-    text = ""
+class TafkaTextListener(TafkaWalker.Listener):
+    def __init__(self) -> None:
+        self.text = StringIO()
+        self.indent = 0
 
-    for procedure in tafka.procedures:
-        text += repr(procedure) + "\n"
-        text += tafka_block_text(procedure.entry)
+    def write(self, text: str) -> None:
+        self.text.write(text)
 
-    text += tafka_block_text(tafka.main)
+    def writeln(self, line: str) -> None:
+        self.write(f"{'  ' * self.indent}{line}\n")
 
-    return text
+    @override
+    def enter_procedure(self, procedure: taf.Procedure) -> None:
+        self.writeln(
+            f"procedure @{procedure.name}("
+            f"{', '.join(map(repr, procedure.parameters))}) "
+            f"-> {procedure.value!r} {'{'}",
+        )
 
+    @override
+    def exit_procedure(self, procedure: taf.Procedure) -> None:
+        self.writeln("}")
 
-def tafka_block_text(block: Block, until: Block | None = None) -> str:
-    if until is not None and block.label == until.label:
-        return ""
+    @override
+    def enter_block(self, block: taf.Block) -> None:
+        self.writeln(f"{block.label.name}:")
+        self.indent += 1
 
-    match block.last:
-        case Goto(next):
-            return f"{block!r}\n{tafka_block_text(next, until)}"
-        case Conditional(_, then_br, else_br) as cond:
-            return (
-                f"{block!r}\n"
-                f"{tafka_block_text(then_br, until=cond.next_block)}"
-                f"{tafka_block_text(else_br, until=cond.next_block)}"
-                f"{tafka_block_text(cond.next_block, until)}"
-            )
-        case Return():
-            return f"{block!r}\n"
-        case _:
-            raise NotImplementedError
+    @override
+    def exit_block(self, block: taf.Block) -> None:
+        self.indent -= 1
+
+    @override
+    def enter_statement(self, statement: taf.Statement) -> None:
+        pass
+
+    @override
+    def exit_statement(self, statement: taf.Statement) -> None:
+        pass
+
+    @override
+    def on_return(self, ret: taf.Return) -> None:
+        self.writeln(f"return {ret.value}")
+
+    @override
+    def on_goto(self, goto: taf.Goto) -> None:
+        self.writeln(f"goto {goto.block.label.name}")
+
+    @override
+    def on_conditional(self, conditional: taf.Conditional) -> None:
+        self.writeln(
+            f"if {conditional.condition!r} "
+            f"then {conditional.then_branch.label.name} "
+            f"else {conditional.else_branch.label.name} "
+            f"next {conditional.next_block.label.name}",
+        )
+
+    @override
+    def on_invokation(self, target: taf.Var, source: taf.Invokation) -> None:
+        self.writeln(
+            f"{target!r} = invoke @{source.closure.name}"
+            f" {', '.join(map(repr, source.args))}",
+        )
+
+    @override
+    def on_load(self, target: taf.Var, source: taf.Load) -> None:
+        self.writeln(f"{target!r} = load {source.constant!r}")
+
+    @override
+    def on_copy(self, target: taf.Var, source: taf.Copy) -> None:
+        self.writeln(f"{target!r} = copy {source.argument!r}")
+
+    @override
+    def on_sum(self, target: taf.Var, source: taf.Sum) -> None:
+        self.writeln(f"{target!r} = sum {source.left!r}, {source.right!r}")
+
+    @override
+    def on_mul(self, target: taf.Var, source: taf.Mul) -> None:
+        self.writeln(f"{target!r} = mul {source.left!r}, {source.right!r}")
+
+    @override
+    def on_div(self, target: taf.Var, source: taf.Div) -> None:
+        self.writeln(f"{target!r} = div {source.left!r}, {source.right!r}")
+
+    @override
+    def on_rem(self, target: taf.Var, source: taf.Rem) -> None:
+        self.writeln(f"{target!r} = rem {source.left!r}, {source.right!r}")
+
+    @override
+    def on_eq(self, target: taf.Var, source: taf.Eq) -> None:
+        self.writeln(f"{target!r} = eq {source.left!r}, {source.right!r}")
+
+    @override
+    def on_lt(self, target: taf.Var, source: taf.Lt) -> None:
+        self.writeln(f"{target!r} = lt {source.left!r}, {source.right!r}")
+
+    @override
+    def on_and(self, target: taf.Var, source: taf.And) -> None:
+        self.writeln(f"{target!r} = and {source.left!r}, {source.right!r}")
+
+    @override
+    def on_or(self, target: taf.Var, source: taf.Or) -> None:
+        self.writeln(f"{target!r} = or {source.left!r}, {source.right!r}")

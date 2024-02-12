@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 
-from .lark import (
+from .tree import (
     Application,
     IfExpression,
     Kind,
@@ -10,13 +10,13 @@ from .lark import (
     Symbol,
     VariableDefinition,
 )
-from .lark import _Expression as Expression
-from .lark import _Integer as Integer
+from .tree import _Expression as Expression
+from .tree import _Integer as Integer
 
 T = TypeVar("T")
 
 
-class Visitor(ABC, Generic[T]):
+class ASTVisitor(ABC, Generic[T]):
     @abstractmethod
     def visit_program(self, tree: Program) -> T:
         pass
