@@ -8,43 +8,72 @@ sleepy: |-
       0))
 
 tafka: |-
-  main:
-    %0: int = load $2: int
-    %1: int = load $3: int
-    %2: int = sum %0: int, %1: int
-    %3: int = load $5: int
-    %4: bool = eq %2: int, %3: int
-    if %4: bool then 0 else 1 next 2
-  0:
-    %5: int = load $1: int
-    goto 2
-  1:
-    %6: int = load $2: int
-    %7: int = load $2: int
-    %8: int = rem %6: int, %7: int
-    %5: int = copy %8: int
-    goto 2
-  2:
-    %9: int = load $2: int
-    %10: int = load $3: int
-    %11: bool = lt %9: int, %10: int
-    %12: int = load $1: int
-    %13: int = load $1: int
-    %14: bool = eq %12: int, %13: int
-    %15: bool = or %11: bool, %14: bool
-    if %15: bool then 3 else 4 next 5
-  3:
-    %16: int = load $1: int
-    %17: int = load $1: int
-    %18: int = mul %16: int, %17: int
-    goto 5
-  4:
-    %19: int = load $0: int
-    %18: int = copy %19: int
-    goto 5
-  5:
-    %20: int = sum %5: int, %18: int
-    return %20: int
+  000. main:
+  001.   %0: int = load $2: int
+  002.   %1: int = load $3: int
+  003.   %2: int = sum %0: int, %1: int
+  004.   %3: int = load $5: int
+  005.   %4: bool = eq %2: int, %3: int
+  006.   if %4: bool then 0 else 1 next 2
+  006. 0:
+  007.   %5: int = load $1: int
+  008.   goto 2
+  008. 1:
+  009.   %6: int = load $2: int
+  010.   %7: int = load $2: int
+  011.   %8: int = rem %6: int, %7: int
+  012.   %5: int = copy %8: int
+  013.   goto 2
+  013. 2:
+  014.   %9: int = load $2: int
+  015.   %10: int = load $3: int
+  016.   %11: bool = lt %9: int, %10: int
+  017.   %12: int = load $1: int
+  018.   %13: int = load $1: int
+  019.   %14: bool = eq %12: int, %13: int
+  020.   %15: bool = or %11: bool, %14: bool
+  021.   if %15: bool then 3 else 4 next 5
+  021. 3:
+  022.   %16: int = load $1: int
+  023.   %17: int = load $1: int
+  024.   %18: int = mul %16: int, %17: int
+  025.   goto 5
+  025. 4:
+  026.   %19: int = load $0: int
+  027.   %18: int = copy %19: int
+  028.   goto 5
+  028. 5:
+  029.   %20: int = sum %5: int, %18: int
+  030.   return %20: int
+
+tafka-usages: |
+  001. %0: r3 w0
+  002. %1: r3 w0
+  003. %0: r0 w0, %1: r0 w0, %2: r5 w0
+  004. %3: r5 w0
+  005. %2: r0 w0, %3: r0 w0, %4: r6 w0
+  006. %4: r0 w0
+  007. %5: r29 w0
+  009. %6: r11 w0
+  010. %7: r11 w0
+  011. %6: r0 w0, %7: r0 w0, %8: r12 w0
+  012. %5: r29 w0, %8: r0 w0
+  014. %9: r16 w0
+  015. %10: r16 w0
+  016. %9: r0 w0, %10: r0 w0, %11: r20 w0
+  017. %12: r19 w0
+  018. %13: r19 w0
+  019. %12: r0 w0, %13: r0 w0, %14: r20 w0
+  020. %11: r0 w0, %14: r0 w0, %15: r21 w0
+  021. %15: r0 w0
+  022. %16: r24 w0
+  023. %17: r24 w0
+  024. %16: r0 w0, %17: r0 w0, %18: r29 w0
+  026. %19: r27 w0
+  027. %18: r29 w0, %19: r0 w0
+  029. %5: r0 w0, %18: r0 w0, %20: r30 w0
+  030. %20: r0 w0
+
 
 asmik-virt: |-
   memory stack

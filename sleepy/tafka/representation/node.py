@@ -1,2 +1,6 @@
+from dataclasses import dataclass, field
+
+
+@dataclass(repr=False)
 class Node:
-    pass
+    note: str = field(default="", init=False)

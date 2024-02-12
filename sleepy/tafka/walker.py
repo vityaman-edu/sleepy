@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import override
 
 from .representation import (
     And,
@@ -23,6 +25,12 @@ from .representation import (
     Sum,
     Var,
 )
+
+
+@dataclass
+class Context:
+    position: int
+    block: Block
 
 
 class TafkaWalker:
@@ -162,6 +170,24 @@ class TafkaWalker:
         @abstractmethod
         def on_or(self, target: Var, source: Or) -> None:
             raise NotImplementedError
+
+    class ContextedListener(Listener):
+        def __init__(self) -> None:
+            super().__init__()
+            self.position = 0
+            self.block: Block
+
+        @override
+        def enter_block(self, block: Block) -> None:
+            self.block = block
+
+        @override
+        def enter_statement(self, statement: Statement) -> None:
+            self.position += 1
+
+        @property
+        def context(self) -> Context:
+            return Context(self.position, self.block)
 
     def __init__(self, listener: Listener) -> None:
         self.listener = listener

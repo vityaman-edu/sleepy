@@ -4,13 +4,22 @@ sleepy: |-
   (def c (sum a b))
 
 tafka: |-
-  main:
-    %0: int = load $1: int
-    %1: int = load $2: int
-    %2: int = load $3: int
-    %3: int = sum %1: int, %2: int
-    %4: int = sum %0: int, %3: int
-    return %4: int
+  000. main:
+  001.   %0: int = load $1: int
+  002.   %1: int = load $2: int
+  003.   %2: int = load $3: int
+  004.   %3: int = sum %1: int, %2: int
+  005.   %4: int = sum %0: int, %3: int
+  006.   return %4: int
+
+tafka-usages: |
+  001. %0: r5 w0
+  002. %1: r4 w0
+  003. %2: r4 w0
+  004. %1: r0 w0, %2: r0 w0, %3: r5 w0
+  005. %0: r0 w0, %3: r0 w0, %4: r6 w0
+  006. %4: r0 w0
+
 
 asmik-virt: |-
   memory stack
