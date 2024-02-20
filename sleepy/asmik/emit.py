@@ -1,7 +1,7 @@
 from typing import override
 
 import sleepy.tafka.representation as taf
-from sleepy.tafka.walker import TafkaWalker
+from sleepy.tafka import Context, TafkaWalker, Usages
 
 from .argument import Immediate, Integer, Unassigned
 from .argument import PhysicalRegister as PhysReg
@@ -20,6 +20,7 @@ from .instruction import (
     Orb,
     Remi,
     Slti,
+    Stor,
     Xorb,
     mov,
     movi,
@@ -42,17 +43,27 @@ class VirtualRegisters:
         return next(self.sequence)
 
 
-class AsmikEmitListener(TafkaWalker.Listener):
+class AsmikEmitListener(TafkaWalker.ContextedListener):
     def __init__(self) -> None:
+        super().__init__()
+
         self.memory = Memory()
         self.registers = VirtualRegisters()
 
         self.resolved: dict[str, int] = {}
 
+        self.procedure: taf.Procedure
+        self.usages: Usages
+
     @override
     def enter_procedure(self, procedure: taf.Procedure) -> None:
+        super().enter_procedure(procedure)
+
+        self.usages = Usages.analyzed(procedure)
+        self.procedure = procedure
+
         addr = self.memory.data_put(IntegerData(self.next_instr_addr))
-        self.resolved[repr(procedure.const)] = addr
+        self.resolved[f"${procedure.const.name}"] = addr
         for i, param in enumerate(procedure.parameters):
             register = self.registers.binded_to(param)
             self.emit(mov(register, PhysReg.arg(i + 1)))
@@ -63,6 +74,7 @@ class AsmikEmitListener(TafkaWalker.Listener):
 
     @override
     def enter_block(self, block: taf.Block) -> None:
+        super().enter_block(block)
         self.resolved[repr(block.label)] = self.next_instr_addr
 
     @override
@@ -71,7 +83,7 @@ class AsmikEmitListener(TafkaWalker.Listener):
 
     @override
     def enter_statement(self, statement: taf.Statement) -> None:
-        pass
+        super().enter_statement(statement)
 
     @override
     def exit_statement(self, statement: taf.Statement) -> None:
@@ -98,27 +110,48 @@ class AsmikEmitListener(TafkaWalker.Listener):
         self.emit(movi(else_address, Unassigned(else_label)))
         self.emit(Brn(condition, else_address))
 
+    def push_context(self, variables: list[taf.Var]) -> None:
+        def push(register: Reg) -> None:
+            self.emit(Stor(Reg.sp(), register))
+            self.emit(Addim(Reg.sp(), Reg.sp(), Integer(8)))
+
+        for local in variables:
+            if self.is_alive(local):
+                push(self.registers.binded_to(local))
+        push(Reg.ra())
+
+    def pop_context(self, variables: list[taf.Var]) -> None:
+        def pop(register: Reg) -> None:
+            self.emit(Addim(Reg.sp(), Reg.sp(), Integer(-8)))
+            self.emit(Load(register, Reg.sp()))
+
+        pop(Reg.ra())
+        for local in variables[::-1]:
+            if self.is_alive(local):
+                pop(self.registers.binded_to(local))
+
     @override
     def on_invokation(
         self,
         target: taf.Var,
         source: taf.Invokation,
     ) -> None:
+        variables = list(self.procedure.locals)
+
+        self.push_context(variables)
+
         for i, arg in enumerate(source.args):
             arg_reg = self.registers.binded_to(arg)
             self.emit(mov(PhysReg.arg(i + 1), arg_reg))
-
-        prev_ra = self.registers.temporary()
-        self.emit(mov(prev_ra, Reg.ra()))
 
         proc_reg = self.registers.binded_to(source.closure)
         self.emit(Addim(Reg.ra(), Reg.ip(), Integer(4)))
         self.emit(Brn(Reg.ze(), proc_reg))
 
-        res_reg = self.registers.binded_to(target)
-        self.emit(mov(res_reg, Reg.a1()))
+        result = self.registers.binded_to(target)
+        self.emit(mov(result, Reg.a1()))
 
-        self.emit(mov(Reg.ra(), prev_ra))
+        self.pop_context(variables)
 
     @override
     def on_load(self, target: taf.Var, source: taf.Load) -> None:
@@ -215,9 +248,19 @@ class AsmikEmitListener(TafkaWalker.Listener):
                 addr = self.memory.data_put(data)
                 return Integer(addr)
             case taf.Signature():
-                return Unassigned(repr(cnst))
+                return Unassigned(f"${cnst.name}")
             case _:
                 raise NotImplementedError
+
+    def is_alive(self, var: taf.Var) -> bool:
+        read = self.usages.next_read(var, self.context)
+        write = self.usages.next_write(var, self.context)
+        init = self.usages.next_write(var, Context(-1, self.procedure.entry))
+
+        assert init is not None  # noqa: S101
+        if write is not None:
+            return read is not None and read <= write
+        return read is not None and init < self.position
 
     @property
     def next_instr_addr(self) -> int:

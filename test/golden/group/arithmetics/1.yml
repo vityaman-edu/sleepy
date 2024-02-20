@@ -2,6 +2,7 @@ sleepy: |-
   (sum (div 5 2) (rem (sum 2 2) 2))
 
 tafka: |-
+  000. procedure @main() -> int {
   000. main:
   001.   %0: int = load $5: int
   002.   %1: int = load $2: int
@@ -13,8 +14,10 @@ tafka: |-
   008.   %7: int = rem %5: int, %6: int
   009.   %8: int = sum %2: int, %7: int
   010.   return %8: int
+  010. }
 
 tafka-usages: |
+  $main: () -> int:
   001. %0: r3 w0
   002. %1: r3 w0
   003. %0: r0 w0, %1: r0 w0, %2: r9 w0
@@ -29,20 +32,21 @@ tafka-usages: |
 
 asmik-virt: |-
   memory stack
-  0000: 5
-  0008: 2
+  0000: 0
+  0008: 5
+  0016: 2
   memory instr
-  0000: addim v0, ze, 0
+  0000: addim v0, ze, 8
   0004: load v0, v0
-  0008: addim v1, ze, 8
+  0008: addim v1, ze, 16
   0012: load v1, v1
   0016: divi v2, v0, v1
-  0020: addim v3, ze, 8
+  0020: addim v3, ze, 16
   0024: load v3, v3
-  0028: addim v4, ze, 8
+  0028: addim v4, ze, 16
   0032: load v4, v4
   0036: addi v5, v3, v4
-  0040: addim v6, ze, 8
+  0040: addim v6, ze, 16
   0044: load v6, v6
   0048: remi v7, v5, v6
   0052: addi v8, v2, v7

@@ -6,7 +6,17 @@ from pytest_golden.plugin import (  # type: ignore  # noqa: PGH003
 )
 
 from sleepy.asmik import AsmikUnit
-from sleepy.tafka import Usages
+from sleepy.tafka import TafkaUnit, Usages
+
+
+def usages(tafka: TafkaUnit) -> str:
+    text = ""
+
+    for procedure in [*tafka.procedures, tafka.main]:
+        text += f"{procedure.const!r}:\n"
+        text += Usages.analyzed(procedure).to_text(procedure)
+
+    return text
 
 
 @pytest.mark.golden_test("group/*/*.yml")
@@ -21,8 +31,7 @@ def test_all(golden: GoldenTestFixture) -> None:
     assert expected_tafka_text == actual_tafka_text
 
     expected_tafka_usages: str = golden.out["tafka-usages"]
-    usages = Usages.analyzed(actual_tafka.main)
-    actual_tafka_usages = usages.to_text(actual_tafka.main)
+    actual_tafka_usages = usages(actual_tafka)
 
     assert expected_tafka_usages == actual_tafka_usages
 

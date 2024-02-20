@@ -4,6 +4,7 @@ sleepy: |-
   (def c (sum a b))
 
 tafka: |-
+  000. procedure @main() -> int {
   000. main:
   001.   %0: int = load $1: int
   002.   %1: int = load $2: int
@@ -11,8 +12,10 @@ tafka: |-
   004.   %3: int = sum %1: int, %2: int
   005.   %4: int = sum %0: int, %3: int
   006.   return %4: int
+  006. }
 
 tafka-usages: |
+  $main: () -> int:
   001. %0: r5 w0
   002. %1: r4 w0
   003. %2: r4 w0
@@ -23,15 +26,16 @@ tafka-usages: |
 
 asmik-virt: |-
   memory stack
-  0000: 1
-  0008: 2
-  0016: 3
+  0000: 0
+  0008: 1
+  0016: 2
+  0024: 3
   memory instr
-  0000: addim v0, ze, 0
+  0000: addim v0, ze, 8
   0004: load v0, v0
-  0008: addim v1, ze, 8
+  0008: addim v1, ze, 16
   0012: load v1, v1
-  0016: addim v2, ze, 16
+  0016: addim v2, ze, 24
   0020: load v2, v2
   0024: addi v3, v1, v2
   0028: addi v4, v0, v3

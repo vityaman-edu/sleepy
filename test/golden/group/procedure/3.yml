@@ -1,0 +1,157 @@
+sleepy: |-
+  (def fibb (lambda (n int)
+    (if (or (eq n 0) (eq n 1))
+      1
+      (sum
+        (self (sum n -1))
+        (self (sum n -2))))))
+  (fibb 4)
+
+tafka: |-
+  000. procedure @0(%0: int) -> int {
+  000. 0:
+  001.   %1: (int) -> ? = load $0: (int) -> ?
+  002.   %2: int = load $0: int
+  003.   %3: bool = eq %0: int, %2: int
+  004.   %4: int = load $1: int
+  005.   %5: bool = eq %0: int, %4: int
+  006.   %6: bool = or %3: bool, %5: bool
+  007.   if %6: bool then 1 else 2 next 3
+  007. 1:
+  008.   %7: int = load $1: int
+  009.   goto 3
+  009. 2:
+  010.   %8: int = load $-1: int
+  011.   %9: int = sum %0: int, %8: int
+  012.   %10: ? = invoke @1 %9: int
+  013.   %11: int = load $-2: int
+  014.   %12: int = sum %0: int, %11: int
+  015.   %13: ? = invoke @1 %12: int
+  016.   %14: ? = sum %10: ?, %13: ?
+  017.   %7: int = copy %14: ?
+  018.   goto 3
+  018. 3:
+  019.   return %7: int
+  019. }
+  019. 
+  019. procedure @main() -> int {
+  019. main:
+  020.   %15: (int) -> int = load $0: (int) -> int
+  021.   %16: int = load $4: int
+  022.   %17: int = invoke @15 %16: int
+  023.   return %17: int
+  023. }
+
+tafka-usages: |
+  $0: (int) -> int:
+  001. %1: r12 w0
+  002. %2: r3 w0
+  003. %0: r5 w0, %2: r0 w0, %3: r6 w0
+  004. %4: r5 w0
+  005. %0: r11 w0, %4: r0 w0, %5: r6 w0
+  006. %3: r0 w0, %5: r0 w0, %6: r7 w0
+  007. %6: r0 w0
+  008. %7: r19 w0
+  010. %8: r11 w0
+  011. %0: r14 w0, %8: r0 w0, %9: r12 w0
+  012. %10: r16 w0, %1: r15 w0, %9: r0 w0
+  013. %11: r14 w0
+  014. %0: r0 w0, %11: r0 w0, %12: r15 w0
+  015. %13: r16 w0, %1: r0 w0, %12: r0 w0
+  016. %10: r0 w0, %13: r0 w0, %14: r17 w0
+  017. %7: r19 w0, %14: r0 w0
+  019. %7: r0 w0
+  $main: () -> int:
+  001. %15: r3 w0
+  002. %16: r3 w0
+  003. %17: r4 w0, %15: r0 w0, %16: r0 w0
+  004. %17: r0 w0
+
+
+asmik-virt: |-
+  memory stack
+  0000: 0
+  0008: 4
+  0016: 56
+  0024: 1
+  0032: -1
+  0040: -2
+  memory instr
+  0000: addim v0, ze, 16
+  0004: load v0, v0
+  0008: addim v1, ze, 8
+  0012: load v1, v1
+  0016: stor sp, ra
+  0020: addim sp, sp, 8
+  0024: addim a1, v1, 0
+  0028: addim ra, ip, 4
+  0032: brn ze, v0
+  0036: addim v2, a1, 0
+  0040: addim sp, sp, -8
+  0044: load ra, sp
+  0048: addim a1, v2, 0
+  0052: brn ze, ra
+  0056: addim v3, a1, 0
+  0060: addim v4, ze, 16
+  0064: load v4, v4
+  0068: addim v5, ze, 0
+  0072: load v5, v5
+  0076: slti v6, v3, v5
+  0080: slti v7, v5, v3
+  0084: orb v6, v6, v7
+  0088: addim v8, ze, 18446744073709551615
+  0092: xorb v6, v6, v8
+  0096: addim v9, ze, 24
+  0100: load v9, v9
+  0104: slti v10, v3, v9
+  0108: slti v11, v9, v3
+  0112: orb v10, v10, v11
+  0116: addim v12, ze, 18446744073709551615
+  0120: xorb v10, v10, v12
+  0124: orb v13, v6, v10
+  0128: addim v14, ze, 152
+  0132: brn v13, v14
+  0136: addim v15, ze, 24
+  0140: load v15, v15
+  0144: addim v16, ze, 304
+  0148: brn ze, v16
+  0152: addim v17, ze, 32
+  0156: load v17, v17
+  0160: addi v18, v3, v17
+  0164: stor sp, v3
+  0168: addim sp, sp, 8
+  0172: stor sp, v4
+  0176: addim sp, sp, 8
+  0180: stor sp, ra
+  0184: addim sp, sp, 8
+  0188: addim a1, v18, 0
+  0192: addim ra, ip, 4
+  0196: brn ze, v4
+  0200: addim v19, a1, 0
+  0204: addim sp, sp, -8
+  0208: load ra, sp
+  0212: addim sp, sp, -8
+  0216: load v4, sp
+  0220: addim sp, sp, -8
+  0224: load v3, sp
+  0228: addim v20, ze, 40
+  0232: load v20, v20
+  0236: addi v21, v3, v20
+  0240: stor sp, v19
+  0244: addim sp, sp, 8
+  0248: stor sp, ra
+  0252: addim sp, sp, 8
+  0256: addim a1, v21, 0
+  0260: addim ra, ip, 4
+  0264: brn ze, v4
+  0268: addim v22, a1, 0
+  0272: addim sp, sp, -8
+  0276: load ra, sp
+  0280: addim sp, sp, -8
+  0284: load v19, sp
+  0288: addi v23, v19, v22
+  0292: addim v15, v23, 0
+  0296: addim v24, ze, 304
+  0300: brn ze, v24
+  0304: addim a1, v15, 0
+  0308: brn ze, ra

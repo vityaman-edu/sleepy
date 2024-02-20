@@ -6,13 +6,13 @@ from sleepy.tafka import TafkaUnit
 
 def main() -> None:
     source = """
-        (def id (lambda (n int) n))
-        (def a (id 1))
-        (def b (id 11))
-        (def c (id 111))
-        (if (and (eq a 1)
-            (and (eq b 11)
-                 (eq c 111))) 1 0)
+    (def fibb (lambda (n int)
+        (if (or (eq n 0) (eq n 1))
+            1
+            (sum
+                (self (sum n -1))
+                (self (sum n -2))))))
+    (fibb 13)
     """
 
     parser = LarkParser()

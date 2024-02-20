@@ -94,17 +94,17 @@ class Usages:
             return None
         return lst[i]
 
-    def to_text(self, block: taf.Block) -> str:
+    def to_text(self, block: taf.Procedure) -> str:
         dumper = UsageDumper(self)
         walker = TafkaWalker(dumper)
-        walker.explore_block(block)
+        walker.explore_procedure(block)
         return dumper.text.getvalue()
 
     @staticmethod
-    def analyzed(block: taf.Block) -> "Usages":
+    def analyzed(procedure: taf.Procedure) -> "Usages":
         collector = Usages.Collector()
         walker = TafkaWalker(collector)
-        walker.explore_block(block)
+        walker.explore_procedure(procedure)
         return collector.usages
 
     class Collector(TafkaWalker.ContextedListener):
@@ -114,7 +114,8 @@ class Usages:
 
         @override
         def enter_procedure(self, procedure: taf.Procedure) -> None:
-            pass
+            for argument in procedure.parameters:
+                self.write(argument)
 
         @override
         def exit_procedure(self, procedure: taf.Procedure) -> None:

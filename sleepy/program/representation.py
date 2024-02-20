@@ -54,8 +54,11 @@ class Intrinsic(Atom):
 
 @dataclass
 class Closure(Expression):
+    from .namespace import Namespace
+
     parameters: list[Parameter]
     statements: list[Expression]
+    namespace: Namespace
 
 
 @dataclass

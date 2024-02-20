@@ -10,7 +10,12 @@ class TafkaEmitVisitor(ProgramVisitor[None]):
     def __init__(self, unit: ProgramUnit) -> None:
         self.unit = unit
 
-        self.main = taf.Block(taf.Label("main"), [])
+        self.main = taf.Procedure(
+            name="main",
+            entry=taf.Block(taf.Label("main"), []),
+            parameters=[],
+            value=taf.Unknown(),
+        )
         self.procedures: list[taf.Procedure] = []
 
         self.var_names = map(str, range(10000000))
@@ -18,7 +23,8 @@ class TafkaEmitVisitor(ProgramVisitor[None]):
 
         self.vars = MetaTable[taf.Var]()
 
-        self.current_block = self.main
+        self.current_procedure = self.main
+        self.current_block = self.current_procedure.entry
         self.last_result = taf.Var("0", taf.Int())
 
     @override
@@ -26,6 +32,7 @@ class TafkaEmitVisitor(ProgramVisitor[None]):
         for statement in tree.statements:
             self.visit_expression(statement)
         self.emit_statement(taf.Return(self.last_result))
+        self.main.value = self.last_result.kind
 
     @override
     def visit_conditional(self, tree: program.Conditional) -> None:
@@ -116,31 +123,46 @@ class TafkaEmitVisitor(ProgramVisitor[None]):
 
     @override
     def visit_lambda(self, tree: program.Closure) -> None:
+        current_procedure = self.current_procedure
         current_block = self.current_block
 
         label = self.next_lbl()
 
-        params = [
+        procedure = taf.Procedure(
+            name=label.name,
+            entry=taf.Block(label, statements=[]),
+            parameters=[],
+            value=taf.Unknown(),
+        )
+
+        self.current_procedure = procedure
+        self.current_block = procedure.entry
+
+        procedure.parameters = [
             self.next_var(taf.Kind.from_sleepy(param.kind))
             for param in tree.parameters
         ]
 
-        for param, var in zip(tree.parameters, params, strict=True):
+        for param, var in zip(
+            tree.parameters,
+            procedure.parameters,
+            strict=True,
+        ):
             self.vars[param.name] = var
 
-        body = taf.Block(label, statements=[])
+        self.emit_intermidiate(
+            taf.Load(taf.Const(label.name, procedure.signature)),
+        )
+        self.vars[tree.namespace.resolved("self")] = self.last_result
 
-        self.current_block = body
         for statement in tree.statements:
             self.visit_expression(statement)
-
         self.emit_statement(taf.Return(self.last_result))
-
-        value = self.last_result.kind
+        procedure.value = self.last_result.kind
 
         self.current_block = current_block
+        self.current_procedure = current_procedure
 
-        procedure = taf.Procedure(label.name, body, params, value)
         self.procedures.append(procedure)
 
         self.emit_intermidiate(
@@ -167,13 +189,17 @@ class TafkaEmitVisitor(ProgramVisitor[None]):
     def emit_statement(self, statement: taf.Statement) -> None:
         if isinstance(statement, taf.Set):
             self.last_result = statement.target
+        if isinstance(statement, taf.Return):
+            self.current_procedure.value = self.last_result.kind
         self.current_block.statements.append(statement)
 
     def emit_intermidiate(self, rvalue: taf.RValue) -> None:
         self.emit_statement(taf.Set(self.next_var(rvalue.value), rvalue))
 
     def next_var(self, kind: taf.Kind) -> taf.Var:
-        return taf.Var(next(self.var_names), kind)
+        var = taf.Var(next(self.var_names), kind)
+        self.current_procedure.locals.append(var)
+        return var
 
     def next_lbl(self) -> taf.Label:
         return taf.Label(next(self.lbl_names))

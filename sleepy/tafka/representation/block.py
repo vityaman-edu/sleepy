@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import cast
 
 from .kind import Kind, Signature
@@ -60,6 +60,7 @@ class Procedure(Node):
     entry: Block
     parameters: list[Var]
     value: Kind
+    locals: list[Var] = field(default_factory=list, init=False)
 
     @property
     def signature(self) -> Signature:

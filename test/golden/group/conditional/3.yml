@@ -8,6 +8,7 @@ sleepy: |-
       0))
 
 tafka: |-
+  000. procedure @main() -> int {
   000. main:
   001.   %0: int = load $2: int
   002.   %1: int = load $3: int
@@ -45,8 +46,10 @@ tafka: |-
   028. 5:
   029.   %20: int = sum %5: int, %18: int
   030.   return %20: int
+  030. }
 
 tafka-usages: |
+  $main: () -> int:
   001. %0: r3 w0
   002. %1: r3 w0
   003. %0: r0 w0, %1: r0 w0, %2: r5 w0
@@ -77,18 +80,18 @@ tafka-usages: |
 
 asmik-virt: |-
   memory stack
-  0000: 2
-  0008: 3
-  0016: 5
-  0024: 1
-  0032: 0
+  0000: 0
+  0008: 2
+  0016: 3
+  0024: 5
+  0032: 1
   memory instr
-  0000: addim v0, ze, 0
+  0000: addim v0, ze, 8
   0004: load v0, v0
-  0008: addim v1, ze, 8
+  0008: addim v1, ze, 16
   0012: load v1, v1
   0016: addi v2, v0, v1
-  0020: addim v3, ze, 16
+  0020: addim v3, ze, 24
   0024: load v3, v3
   0028: slti v4, v2, v3
   0032: slti v5, v3, v2
@@ -97,26 +100,26 @@ asmik-virt: |-
   0044: xorb v4, v4, v6
   0048: addim v7, ze, 72
   0052: brn v4, v7
-  0056: addim v8, ze, 24
+  0056: addim v8, ze, 32
   0060: load v8, v8
   0064: addim v9, ze, 104
   0068: brn ze, v9
-  0072: addim v10, ze, 0
+  0072: addim v10, ze, 8
   0076: load v10, v10
-  0080: addim v11, ze, 0
+  0080: addim v11, ze, 8
   0084: load v11, v11
   0088: remi v12, v10, v11
   0092: addim v8, v12, 0
   0096: addim v13, ze, 104
   0100: brn ze, v13
-  0104: addim v14, ze, 0
+  0104: addim v14, ze, 8
   0108: load v14, v14
-  0112: addim v15, ze, 8
+  0112: addim v15, ze, 16
   0116: load v15, v15
   0120: slti v16, v14, v15
-  0124: addim v17, ze, 24
+  0124: addim v17, ze, 32
   0128: load v17, v17
-  0132: addim v18, ze, 24
+  0132: addim v18, ze, 32
   0136: load v18, v18
   0140: slti v19, v17, v18
   0144: slti v20, v18, v17
@@ -126,14 +129,14 @@ asmik-virt: |-
   0160: orb v22, v16, v19
   0164: addim v23, ze, 200
   0168: brn v22, v23
-  0172: addim v24, ze, 24
+  0172: addim v24, ze, 32
   0176: load v24, v24
-  0180: addim v25, ze, 24
+  0180: addim v25, ze, 32
   0184: load v25, v25
   0188: muli v26, v24, v25
   0192: addim v27, ze, 220
   0196: brn ze, v27
-  0200: addim v28, ze, 32
+  0200: addim v28, ze, 0
   0204: load v28, v28
   0208: addim v26, v28, 0
   0212: addim v29, ze, 220

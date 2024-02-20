@@ -9,7 +9,7 @@ from .block import (
     Set,
     Statement,
 )
-from .kind import Int, Kind, Signature
+from .kind import Int, Kind, Signature, Unknown
 from .node import Node
 from .rvalue import (
     And,
